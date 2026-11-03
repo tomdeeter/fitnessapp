@@ -1,0 +1,782 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Foundational Fitness Tracker</title>
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Fitness"><meta name="theme-color" content="#0b7a75">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#16202b;--muted:#647182;--line:#e3e7ec;--acc:#0b7a75;--acc2:#e6f4f3;--warn:#b25b00;--warnbg:#fff4e5;--good:#1d7a3a;--goodbg:#e8f6ec;--A:#7a3db8;--Abg:#f2eafb;--B:#1f63c4;--Bbg:#e8f0fc;--bad:#b3261e;--onacc:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141a;--card:#171e26;--ink:#e6ebf0;--muted:#93a0ae;--line:#2a3440;--acc:#3fc1b9;--acc2:#163432;--warn:#f0a44b;--warnbg:#33240f;--good:#5fd18a;--goodbg:#14301e;--A:#c49af0;--Abg:#2c1f3d;--B:#7fb0f5;--Bbg:#17263d;--bad:#f28b82;--onacc:#06201f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f141a;--card:#171e26;--ink:#e6ebf0;--muted:#93a0ae;--line:#2a3440;--acc:#3fc1b9;--acc2:#163432;--warn:#f0a44b;--warnbg:#33240f;--good:#5fd18a;--goodbg:#14301e;--A:#c49af0;--Abg:#2c1f3d;--B:#7fb0f5;--Bbg:#17263d;--bad:#f28b82;--onacc:#06201f;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+header{padding:14px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;letter-spacing:-.2px}
+header .sub{color:var(--muted);font-size:13px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .in{max-width:1000px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;padding:0 max(6px,env(safe-area-inset-right,0px)) 0 max(6px,env(safe-area-inset-left,0px))}
+nav button{background:none;border:0;color:var(--muted);padding:11px 12px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--acc);border-bottom-color:var(--acc)}
+nav button .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-left:5px;vertical-align:middle}
+main{max-width:1000px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 110px max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+h2{font-size:18px;margin:0 0 6px}h3{font-size:15px;margin:0 0 6px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 13px;border-radius:9px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn.ghost{border-color:transparent;background:none}
+a{color:var(--acc)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+textarea{width:100%;min-height:60px}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--acc);vertical-align:middle}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted);font-weight:600}
+label.f input,label.f select{color:var(--ink);font-weight:400}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--acc2);color:var(--acc)}
+.tag.A{background:var(--Abg);color:var(--A)}.tag.B{background:var(--Bbg);color:var(--B)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}.tag.good{background:var(--goodbg);color:var(--good)}
+.hero h2{font-size:22px}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.chip{border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;background:var(--card);font-size:12px;line-height:1.25}
+.chip b{display:block;font-size:13px}
+.chip.done{background:var(--goodbg);border-color:var(--good)}
+.chip.today{outline:2px solid var(--acc);outline-offset:1px}
+.bar{height:9px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 2px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:6px}
+.big{font-size:26px;font-weight:800;letter-spacing:-.5px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+table.sets td{vertical-align:middle}
+table.sets input[type=text]{width:84px}
+table.sets select.stype{font-size:12px;font-weight:700;padding:2px 4px;border-radius:20px;border-color:transparent;background:var(--acc2);color:var(--acc);text-transform:none}
+table.sets.half input[type=text]{width:42px;padding-left:4px;padding-right:4px;text-align:center}
+table.sets tr.d td{background:var(--goodbg)}
+.ex .exhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.ex select{font-weight:700;max-width:100%}
+.cue{font-size:13px;color:var(--muted);margin:2px 0 6px}
+.last{font-size:13px;margin:4px 0}
+.hint{font-size:13px;padding:5px 9px;border-radius:7px;margin:4px 0 6px;display:inline-block}
+.hint.up{background:var(--goodbg);color:var(--good)}.hint.dn{background:var(--warnbg);color:var(--warn)}
+#timerbar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:none;background:var(--ink);color:var(--bg);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+#timerbar .in{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#timerbar .t{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;min-width:90px}
+#timerbar button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:8px;padding:5px 10px;font:inherit;cursor:pointer}
+#toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:9px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;font-weight:600}
+.timer{border-radius:14px;padding:18px;text-align:center;background:var(--acc2);margin:10px 0}
+.timer .ph{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.timer .tt{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.timer.work{background:#c62828;color:#fff}.timer.rest{background:#1565c0;color:#fff}.timer.ready{background:var(--warnbg)}.timer.done{background:var(--goodbg)}
+.hab{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.hab:last-child{border-bottom:0}
+.hab .d{font-size:12.5px;color:var(--muted)}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:340px}
+.heat div{aspect-ratio:1;border-radius:4px;background:var(--line);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.lib td:first-child{font-weight:600}
+.pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+.sess{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+details summary{cursor:pointer;font-weight:600}
+svg text{fill:var(--muted);font-size:11px}
+.note{background:var(--warnbg);color:var(--ink);border-radius:9px;padding:9px 12px;font-size:13px}
+footer{max-width:1000px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right,0px)) 30px max(16px,env(safe-area-inset-left,0px));color:var(--muted);font-size:12px}
+@media (max-width:560px){.chips{gap:3px}.chip{font-size:10.5px;padding:6px 2px}.timer .tt{font-size:52px}table.sets input[type=text]{width:66px}}
+.card{overflow-x:auto}
+select{max-width:100%}
+#modal{position:fixed;inset:0;z-index:30;background:rgba(10,15,20,.55);display:flex;align-items:center;justify-content:center;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+#modal .mbox{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
+#modal p{margin:0}
+#modal input{width:100%}
+#syncSt{font-size:12px}
+</style>
+<header>
+  <div><h1>Foundational Fitness Tracker</h1><div class="sub">Huberman Lab 7-day protocol + Daily Blueprint habits</div></div>
+  <div class="row" style="gap:8px"><span id="syncSt" class="pill" style="margin-left:0"></span><div id="hdrSched"></div></div>
+</header>
+<nav><div class="in" id="tabs"></div></nav>
+<main id="app"></main>
+<footer>Based on Huberman Lab's Foundational Fitness Protocol and Daily Blueprint. General information only, not medical advice. Check with your doctor before starting HIIT or deliberate cold exposure. Your log is saved to your private cloud copy of this page and cached on this device. Settings → Export gives you a backup file.</footer>
+<div id="timerbar"><div class="in"><span id="tbLabel">Rest</span><span class="t" id="tbTime">0:00</span><button data-a="tbAdj" data-v="-15">−15s</button><button data-a="tbAdj" data-v="15">+15s</button><button data-a="tbStop">Stop</button><span class="small" style="opacity:.8">Use physiological sighs: two nasal inhales, one long exhale</span></div></div>
+<div id="toast"></div>
+<div id="modal" hidden></div>
+
+<script>
+/* ---------- helpers ---------- */
+const KEY='hff_tracker_v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const todayStr=()=>ymd(new Date());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WDL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate=s=>{const d=parse(s);return `${MON[d.getMonth()]} ${d.getDate()}`};
+const mmss=sec=>{sec=Math.max(0,Math.round(sec));return `${Math.floor(sec/60)}:${pad(sec%60)}`};
+const yt=q=>'https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+
+/* ---------- protocol data (from the PDFs) ---------- */
+const DAYS=[
+ {n:1,short:'Zone 2',kind:'cardio',title:'Long Endurance',desc:'At least 30 min of Zone 2 cardio, ideally 60–75 min (work up to it). Zone 2 means breathing faster than normal but still able to hold a conversation. Use nasal breathing when you can. To make it harder, add a weighted vest or backpack.',examples:'Jogging, rowing, cycling, swimming, hiking',z2:true},
+ {n:2,short:'Legs',kind:'resistance',title:'Legs',desc:'10-min warm-up, then 50–60 min of training (75 min max). Quads and hamstrings: one isolated exercise and one compound exercise for each. Calves: one compound exercise.',examples:'Leg extension / hack squat · leg curl / glute-ham raise · standing / seated calf raise'},
+ {n:3,short:'Cold',kind:'cold',title:'Heat & Cold / Recovery',desc:'Full protocol: sauna 20 min + ice bath or cold shower 5 min, repeated 3–5×. Your setup is cold showers, with a hot shower or bath as optional heat. Start slowly with deliberate heat and cold.',examples:'Cold shower rounds · optional hot shower/bath'},
+ {n:4,short:'Torso',kind:'resistance',title:'Torso & Neck',desc:'10-min warm-up, then 50–60 min. Push/pull for chest, back and shoulders, plus neck work. Neck training is often skipped, but it lowers injury risk and helps posture. Indirectly trains arms.',examples:'Incline press / cable crossover · chin-up / row · shoulder press / lateral raise / rear-delt fly · neck'},
+ {n:5,short:'Cardio',kind:'cardio',title:'Moderate Cardio',desc:'35 min of moderate-intensity cardio at about 75–80% of maximum effort. Ideally done outside.',examples:'Running, rowing, cycling, jumping jacks, stair-climb, jump rope',z2:false},
+ {n:6,short:'HIIT',kind:'hiit',title:'HIIT',desc:'20–60 s all-out sprint + 10 s rest × 8–12 rounds. Try to reach maximum heart rate. Pick an exercise you can do with perfect form so you don\'t get hurt. Indirectly trains legs.',examples:'Assault bike, sprint/jog intervals, rowing, ski machine, sand sprints'},
+ {n:7,short:'Arms',kind:'resistance',title:'Arms, Neck & Calves',desc:'10-min warm-up, then 50–60 min. Biceps, triceps, calves, tibialis, plus neck. Indirectly trains torso, especially if you include dips.',examples:'Incline curl / DB curl · overhead extension / dips · standing / seated calf raise, tibialis raise · neck'},
+];
+const EXTRA={n:0,kind:'cardio',title:'Extra Zone 2 / Walk',desc:'Additional Zone 2 minutes (walks, easy rides, rucks) toward the 180–200 min weekly goal.',z2:true};
+const dayInfo=n=>n===0?EXTRA:DAYS[n-1];
+const SCHED={
+ A:{label:'Heavy',sets:'3–4',reps:[4,8],rest:'2–4 min',restSec:180,defSets:3},
+ B:{label:'Moderate–light',sets:'2–3',reps:[8,15],rest:'~90 s',restSec:90,defSets:3}
+};
+
+/* Exercise library adapted to: dumbbells, barbell + rack + plates, adjustable bench, pull-up bar, Peloton Bike & Tread */
+const EX={
+ bb_squat:{n:'Barbell back squat (deep)',g:'Quadriceps',p:'Lengthened',eq:'Barbell + rack',cue:'Full depth with control. Set the safety pins.',q:'barbell back squat proper form full depth'},
+ goblet_heels:{n:'Heels-elevated goblet squat',g:'Quadriceps',p:'Lengthened',eq:'Dumbbell + plate under heels',cue:'Heels on a plate, torso upright, knees travel forward.',q:'heels elevated goblet squat form'},
+ bss:{n:'Bulgarian split squat',g:'Quadriceps',p:'Lengthened',eq:'Dumbbells + bench',cue:'Rear foot on bench. Let the front knee travel over the toes.',q:'bulgarian split squat dumbbell form'},
+ sissy:{n:'Assisted sissy squat',g:'Quadriceps',p:'Lengthened',eq:'Hold the rack for balance',cue:'Lean back, knees forward; deep quad stretch.',q:'assisted sissy squat form'},
+ db_legext:{n:'Seated dumbbell leg extension',g:'Quadriceps',p:'Shortened',eq:'Dumbbell + bench',cue:'Hold a dumbbell between your feet. Squeeze the quads hard at full lockout. Your leg-extension substitute.',q:'seated dumbbell leg extension'},
+ band_legext:{n:'Banded leg extension',g:'Quadriceps',p:'Shortened',eq:'Band anchored low on rack',cue:'Pause 1–2 s at full extension.',q:'resistance band leg extension'},
+ db_legcurl:{n:'Prone dumbbell leg curl',g:'Hamstrings',p:'Shortened',eq:'Dumbbell + flat bench',cue:'Lie face-down with a dumbbell between your feet. Curl and squeeze. Your leg-curl substitute.',q:'prone dumbbell leg curl bench'},
+ slider_curl:{n:'Slider / towel hamstring curl',g:'Hamstrings',p:'Shortened',eq:'Towel on smooth floor',cue:'Hips up; pull heels toward glutes.',q:'slider hamstring curl form'},
+ bb_rdl:{n:'Barbell Romanian deadlift',g:'Hamstrings',p:'Lengthened',eq:'Barbell',cue:'Soft knees, hinge to a deep hamstring stretch, keep your back flat.',q:'barbell romanian deadlift form'},
+ db_rdl:{n:'Dumbbell Romanian deadlift',g:'Hamstrings',p:'Lengthened',eq:'Dumbbells',cue:'Dumbbells slide down the thighs; hips back.',q:'dumbbell romanian deadlift form'},
+ nordic:{n:'Assisted Nordic hamstring curl',g:'Hamstrings',p:'Lengthened',eq:'Feet anchored under loaded barbell',cue:'Lower slowly; push back up with hands. Home glute-ham-raise substitute.',q:'nordic hamstring curl at home barbell anchor'},
+ standing_calf:{n:'Standing calf raise (deficit)',g:'Calves',p:'Lengthened',eq:'Barbell in rack or dumbbells + plate',cue:'Balls of feet on a plate; full stretch & pause at bottom.',q:'standing calf raise deficit dumbbell'},
+ sl_calf:{n:'Single-leg dumbbell calf raise',g:'Calves',p:'Lengthened',eq:'Dumbbell + plate/step',cue:'Slow lowering, full stretch.',q:'single leg dumbbell calf raise'},
+ seated_calf:{n:'Seated calf raise',g:'Calves',p:'Shortened',eq:'Bench + dumbbells/barbell on knees',cue:'Knees at 90°, toes on a plate; squeeze at top.',q:'seated dumbbell calf raise'},
+ tib_raise:{n:'Tibialis raise',g:'Tibialis',p:'Shortened',eq:'Wall (or plate on feet)',cue:'Back against wall, heels forward; lift toes high.',q:'tibialis raise wall'},
+ incline_db:{n:'Incline dumbbell press',g:'Chest',p:'Lengthened',eq:'Dumbbells + incline bench',cue:'30–45° incline; deep stretch at bottom.',q:'incline dumbbell press form'},
+ incline_bb:{n:'Incline barbell press',g:'Chest',p:'Lengthened',eq:'Barbell + rack + incline bench',cue:'Set safeties; touch upper chest.',q:'incline barbell bench press form'},
+ db_fly:{n:'Dumbbell fly',g:'Chest',p:'Lengthened',eq:'Dumbbells + bench',cue:'Slight elbow bend; stretch, don\'t overextend.',q:'dumbbell chest fly form'},
+ squeeze_press:{n:'Dumbbell squeeze press',g:'Chest',p:'Shortened',eq:'Dumbbells + bench',cue:'Keep the dumbbells pressed together the whole rep. Cable-crossover substitute.',q:'dumbbell squeeze press'},
+ band_xover:{n:'Banded chest crossover',g:'Chest',p:'Shortened',eq:'Band anchored to rack',cue:'Hands cross at the end; hard squeeze.',q:'resistance band chest crossover'},
+ pullup:{n:'Pull-up',g:'Back',p:'Lengthened',eq:'Pull-up bar',cue:'Start each rep from a dead hang. Once strong, add weight with a dumbbell between your feet.',q:'pull up proper form dead hang'},
+ chinup:{n:'Chin-up',g:'Back',p:'Lengthened',eq:'Pull-up bar',cue:'Palms facing you; full range.',q:'chin up proper form'},
+ neg_pullup:{n:'Pull-up negatives / band-assisted',g:'Back',p:'Lengthened',eq:'Pull-up bar (+ band)',cue:'Jump up, lower over 3–5 s.',q:'pull up negatives band assisted'},
+ db_row:{n:'One-arm dumbbell row',g:'Back',p:'Shortened',eq:'Dumbbell + bench',cue:'Elbow to hip; squeeze shoulder blade. Seated-row substitute.',q:'one arm dumbbell row form'},
+ cs_row:{n:'Chest-supported dumbbell row',g:'Back',p:'Shortened',eq:'Incline bench + dumbbells',cue:'Chest on bench; pause at top.',q:'chest supported dumbbell row incline bench'},
+ bb_row:{n:'Barbell bent-over row',g:'Back',p:'Shortened',eq:'Barbell',cue:'Flat back, pull to lower ribs.',q:'barbell bent over row form'},
+ bb_ohp:{n:'Barbell overhead press',g:'Shoulders',p:'Press',eq:'Barbell + rack',cue:'Brace, squeeze glutes, press straight up.',q:'barbell overhead press form'},
+ db_ohp:{n:'Seated dumbbell shoulder press',g:'Shoulders',p:'Press',eq:'Dumbbells + upright bench',cue:'Elbows slightly forward.',q:'seated dumbbell shoulder press form'},
+ lat_raise:{n:'Dumbbell lateral raise',g:'Shoulders',p:'Lateral delt',eq:'Dumbbells',cue:'Lead with elbows to shoulder height.',q:'dumbbell lateral raise proper form'},
+ rear_fly:{n:'Rear-delt fly (prone incline)',g:'Shoulders',p:'Rear delt',eq:'Dumbbells + incline bench',cue:'Chest on bench, arms out wide; light weight.',q:'incline bench rear delt fly dumbbell'},
+ neck_ext:{n:'Prone neck extension (towel-wrapped plate)',g:'Neck',p:'Extension',eq:'Light plate + towel + bench',cue:'Lie face-down with your head off the bench and the plate on the back of your head. Slow, small range. Start very light.',q:'lying neck extension plate bench safe',u:'reps'},
+ neck_flex:{n:'Supine neck flexion (towel-wrapped plate)',g:'Neck',p:'Flexion',eq:'Light plate + towel + bench',cue:'Lie face-up, plate on forehead; tuck chin, small range.',q:'lying neck flexion plate bench',u:'reps'},
+ neck_lat:{n:'Side-lying neck lateral raise',g:'Neck',p:'Lateral',eq:'Bench (+ light plate)',cue:'Ear toward shoulder against light load; both sides.',q:'side lying neck lateral flexion exercise',u:'reps'},
+ neck_iso:{n:'Manual neck isometrics (4-way)',g:'Neck',p:'Isometric',eq:'Hands only',cue:'Press your head into your hand (front, back, each side) without moving. Hold about 10 s each.',q:'4 way neck isometrics hands',u:'sec'},
+ incline_curl:{n:'Incline dumbbell curl',g:'Biceps',p:'Lengthened',eq:'Dumbbells + incline bench',cue:'Arms hang behind torso; full stretch.',q:'incline dumbbell curl form'},
+ db_curl:{n:'Dumbbell curl',g:'Biceps',p:'Shortened',eq:'Dumbbells',cue:'Supinate and squeeze at the top.',q:'dumbbell bicep curl proper form'},
+ spider_curl:{n:'Spider curl (prone incline)',g:'Biceps',p:'Shortened',eq:'Dumbbells + incline bench',cue:'Chest on bench; peak squeeze. Preacher-curl substitute.',q:'spider curl incline bench dumbbell'},
+ bb_curl:{n:'Barbell curl',g:'Biceps',p:'Shortened',eq:'Barbell',cue:'Elbows pinned; no swinging.',q:'barbell curl proper form'},
+ oh_ext:{n:'Overhead dumbbell triceps extension',g:'Triceps',p:'Lengthened',eq:'Dumbbell (+ bench)',cue:'Elbows up, deep stretch behind head.',q:'overhead dumbbell triceps extension form'},
+ bench_dip:{n:'Bench dips',g:'Triceps',p:'Shortened',eq:'Bench (+ plate on lap)',cue:'Shoulders down; stop at ~90° elbow. Your dips option.',q:'bench dips proper form'},
+ dip:{n:'Parallel-bar dips (if your rack has dip bars)',g:'Triceps',p:'Shortened',eq:'Dip attachment',cue:'Upright torso for triceps emphasis.',q:'triceps dips proper form'},
+ cg_bench:{n:'Close-grip bench press',g:'Triceps',p:'Shortened',eq:'Barbell + rack + bench',cue:'Shoulder-width grip; elbows tucked.',q:'close grip bench press form'},
+ kickback:{n:'Dumbbell kickback',g:'Triceps',p:'Shortened',eq:'Dumbbell + bench',cue:'Upper arm still; lock out & squeeze.',q:'dumbbell triceps kickback form'},
+};
+const SLOTS={
+ 2:[{id:'l_q2',g:'Quadriceps',p:'Isolated',o:['db_legext','band_legext']},
+    {id:'l_q1',g:'Quadriceps',p:'Compound',o:['bb_squat','goblet_heels','bss','sissy']},
+    {id:'l_h1',g:'Hamstrings',p:'Isolated',o:['db_legcurl','slider_curl']},
+    {id:'l_h2',g:'Hamstrings',p:'Compound',o:['bb_rdl','db_rdl','nordic']},
+    {id:'l_c1',g:'Calves',p:'Compound',o:['standing_calf','sl_calf']}],
+ 4:[{id:'t_c2',g:'Chest',p:'Isolated',o:['squeeze_press','band_xover']},
+    {id:'t_c1',g:'Chest',p:'Compound',o:['incline_db','incline_bb','db_fly']},
+    {id:'t_b2',g:'Back',p:'Isolated',o:['db_row','cs_row','bb_row']},
+    {id:'t_b1',g:'Back',p:'Compound',o:['pullup','chinup','neg_pullup']},
+    {id:'t_s1',g:'Shoulders',p:'Press',o:['db_ohp','bb_ohp']},
+    {id:'t_s2',g:'Shoulders',p:'Lateral delt',o:['lat_raise']},
+    {id:'t_s3',g:'Shoulders',p:'Rear delt',o:['rear_fly']}],
+ 7:[{id:'a_b1',g:'Biceps',p:'Compound',o:['incline_curl']},
+    {id:'a_b2',g:'Biceps',p:'Isolated',o:['db_curl','spider_curl','bb_curl']},
+    {id:'a_t1',g:'Triceps',p:'Compound',o:['oh_ext']},
+    {id:'a_t2',g:'Triceps',p:'Isolated',o:['bench_dip','dip','cg_bench','kickback']},
+    {id:'a_c1',g:'Calves',p:'Compound',o:['standing_calf','sl_calf']}]
+};
+const CARDIO_MODS=['Peloton Bike','Peloton Tread: run/jog','Peloton Tread: incline walk','Outdoor walk / hike','Ruck (weighted vest/backpack)','Outdoor run','Other'];
+const HIIT_MODS=['Peloton Bike sprints','Peloton Tread sprint/jog','Outdoor sprints','Jump rope','Other'];
+const VIDEOS=[
+ {t:'Huberman Lab #94: Fitness Toolkit, the full Foundational Fitness Protocol explained',u:'https://www.youtube.com/watch?v=q1Ss8sTbFBY'},
+ {t:'Neck training (ATHLEAN-X, the video linked in the protocol PDF)',u:'https://youtu.be/wjiZaCJ6tCA'},
+ {t:'Andrew Huberman demonstrates neck training',u:'https://www.youtube.com/watch?v=fBWO446tYxw'},
+ {t:'NSDR (Non-Sleep Deep Rest) 10-min protocol',u:'https://youtu.be/AKGrmY8OSHM'},
+ {t:'Daily Blueprint source episode (linked in the Blueprint PDF)',u:'https://www.youtube.com/watch?v=lsODSDmY4CY'},
+ {t:'Heat exposure protocols (Huberman Lab article)',u:'https://hubermanlab.com/deliberate-heat-exposure-protocols-for-health-and-performance/'},
+ {t:'Cold exposure protocols (Huberman Lab article)',u:'https://hubermanlab.com/the-science-and-use-of-cold-exposure-for-health-and-performance/'},
+ {t:'Foundational Fitness Protocol newsletter',u:'https://www.hubermanlab.com/newsletter/foundational-fitness-protocol'},
+];
+const HABITS=[
+ {phase:'Morning (hours 1–4)',items:[
+  {id:'wake',t:'Woke at my usual time (±1 hr)',d:'Same time every day, days off included.'},
+  {id:'sun',t:'Morning sunlight',d:'Within 30–60 min of waking: 5–10 min if sunny, 10–15 if cloudy, up to 30 if overcast. No sunglasses, and never stare at the sun.'},
+  {id:'water',t:'~32 oz (1 L) water + pinch of sea salt',d:'During the morning period.'},
+  {id:'caffeine',t:'Delayed caffeine 90–120 min',d:'Fine to have it earlier if you train first thing.'},
+  {id:'cyclic',t:'Energizing breathwork',d:'Cyclic hyperventilation: 20–25 deep breaths, exhale fully, hold 15–30 s, up to 5 min total. Do it seated and never near water.',opt:true},
+  {id:'deep',t:'Hard mental work in the first 1–4 hrs',d:'Screen at eye level or above.',opt:true}]},
+ {phase:'Midday → Evening (hours 5–13)',items:[
+  {id:'exercise',t:'Did today\'s workout',d:'Checks itself when you log a session.',auto:true},
+  {id:'lunch',t:'Lower-carb lunch',d:'Helps avoid the afternoon crash.'},
+  {id:'walk',t:'5–30 min walk after lunch',d:'Boosts metabolism, and the light exposure helps set your circadian rhythm.'},
+  {id:'nsdr',t:'NSDR 10–30 min or nap ≤ 20 min',d:'Optional if you don\'t get an afternoon dip.',link:'https://youtu.be/AKGrmY8OSHM',opt:true},
+  {id:'sunset',t:'Sunset light exposure',d:'Reduces the impact of light later at night.'},
+  {id:'stretch',t:'Static stretching',d:'Hold each major muscle group 30–60 s with long exhales. 3×/week to daily.',opt:true}]},
+ {phase:'Bedtime (hours 14–24)',items:[
+  {id:'dim',t:'Dimmed lights & screens after sunset',d:'Avoid overhead and bright lights; use a red-hued filter.'},
+  {id:'sigh',t:'Physiological sighs',d:'Double inhale, long exhale. 1–3 reps, or 5 min daily.'},
+  {id:'cool',t:'Bedroom 1–3° cooler and dark',d:'Blackout blinds or eye mask.'}]}
+];
+const ALLH=HABITS.flatMap(p=>p.items);
+const COREH=ALLH.filter(h=>!h.opt);
+
+/* ---------- state ---------- */
+const DEF={settings:{age:55,units:'lb',cycleStart:'',schedAStart:'2026-10',restA:30,restB:30,choices:{},videos:{},custom:[]},sessions:[],draft:null,habits:{}};
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||null}catch(e){S=null}
+if(!S)S=JSON.parse(JSON.stringify(DEF));
+S.settings=Object.assign({},DEF.settings,S.settings||{});
+S.sessions=S.sessions||[];S.habits=S.habits||{};
+let saveT;
+function migRest(){if(S.settings&&!S.settings.rest30){S.settings.restA=30;S.settings.restB=30;S.settings.rest30=true;save(true)}}
+function save(now){clearTimeout(saveT);const f=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};now?f():saveT=setTimeout(f,250);Sync.mark()}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity=0,1800)}
+
+/* ---------- in-page dialogs (the viewer blocks confirm/prompt/alert) ---------- */
+function ask(msg,o){o=o||{};const input=o.input!=null?o.input:null;return new Promise(res=>{const m=$('#modal');
+ m.innerHTML=`<div class="mbox" role="dialog" aria-modal="true"><p>${esc(msg)}</p>${input!==null?`<input type="text" id="mIn" value="${esc(input)}">`:''}<div class="row" style="justify-content:flex-end"><button class="btn" id="mNo">Cancel</button><button class="btn ${o.danger?'danger':'pri'}" id="mOk">${esc(o.ok||'OK')}</button></div></div>`;
+ m.hidden=false;const done=v=>{m.hidden=true;m.innerHTML='';res(v)};
+ $('#mNo').onclick=()=>done(input!==null?null:false);
+ $('#mOk').onclick=()=>done(input!==null?$('#mIn').value:true);
+ const i=$('#mIn');if(i){i.focus();i.onkeydown=e=>{if(e.key==='Enter')$('#mOk').click()}}else $('#mOk').focus()})}
+const confirmP=(msg,ok,danger)=>ask(msg,{ok:ok||'OK',danger:!!danger});
+const promptP=(msg,def)=>ask(msg,{input:def||'',ok:'Save'});
+
+/* ---------- keep the screen on during a workout ---------- */
+let WL=null;
+async function wake(){try{if(S.draft&&!WL&&navigator.wakeLock&&!document.hidden){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}}catch(e){WL=null}}
+
+/* ---------- cloud sync: a private copy in the page's db, localStorage stays as the offline cache ---------- */
+const DIRTY_KEY='hff_dirty';
+const jclone=o=>JSON.parse(JSON.stringify(o));
+/* ---- Supabase connection ----
+   Paste YOUR project's values (Supabase dashboard > Project Settings > API Keys).
+   Use the Project URL and the anon / publishable key. These are designed to be public; row-level security protects your data.
+   NEVER paste the service_role / secret key here. */
+const SUPABASE_URL='https://quffrkowibfdamtkpgol.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_E1XtTXRpwpOWuYRBIAbQhA_vnW4-LV_';
+const stab=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}):x);
+const Sync={
+ uid:null,prof:null,last:{},t:null,rt:null,busy:false,again:false,ready:false,dirty:false,pulled:0,st:'',
+ setDirty(v){this.dirty=v;try{v?localStorage.setItem(DIRTY_KEY,'1'):localStorage.removeItem(DIRTY_KEY)}catch(e){}},
+ setSt(s){this.st=s;const el=$('#syncSt');if(el)el.textContent=({signin:'Sign in to sync',local:'This device only',loading:'Syncing…',saving:'Saving…',saved:'Saved ✓',offline:'Offline · will retry',error:'Cloud save problem'})[s]||''},
+ desired(){
+  const d={p:{settings:jclone(S.settings)}};
+  S.sessions.forEach(s=>{if(!s.id)s.id=uid();d['s:'+s.id]=jclone(s)});
+  const hm={};
+  for(const[day,v]of Object.entries(S.habits||{})){const c={};for(const[k,x]of Object.entries(v||{}))if(x)c[k]=true;if(Object.keys(c).length){const m=day.slice(0,7);(hm[m]=hm[m]||{})[day]=c}}
+  Object.entries(hm).forEach(([m,days])=>{d['h:'+m]={days}});
+  return d},
+ plan(){const d=this.desired(),ops=[];
+  for(const k in d){const j=stab(d[k]);if(this.last[k]!==j)ops.push({k,j,data:d[k]})}
+  for(const k in this.last)if(!(k in d))ops.push({k,del:true});
+  return ops},
+ async apply(op){
+  if(op.del){const{error}=await this.sb.from('app_docs').delete().eq('key',op.k);if(error)throw error;delete this.last[op.k]}
+  else{const{error}=await this.sb.from('app_docs').upsert({user_id:this.uid,key:op.k,data:op.data,updated_at:new Date().toISOString()},{onConflict:'user_id,key'});if(error)throw error;this.last[op.k]=op.j}},
+ async push(){
+  if(!this.ready)return;
+  if(this.busy){this.again=true;return}
+  this.busy=true;
+  try{
+   do{this.again=false;const ops=this.plan();if(!ops.length)break;this.setSt('saving');for(const op of ops)await this.apply(op)}while(this.again);
+   if(!this.plan().length){this.setDirty(false);this.setSt('saved')}
+  }catch(e){
+   const c=e&&e.code,m=String(e&&e.message||'');
+   if(c==='PGRST301'||c==='PGRST303'||/jwt|not authenticated/i.test(m)){this.ready=false;this.setSt('signin');showAuth('Your session expired. Please sign in again.')}
+   else if(c&&/^(22|23|42|PGRST)/.test(c)){this.setSt('error');console.error(e)}
+   else{this.setSt('offline');clearTimeout(this.rt);this.rt=setTimeout(()=>this.push(),15000)}
+  }finally{this.busy=false}},
+ mark(){
+  this.setDirty(true);
+  if(!this.ready)return;
+  clearTimeout(this.t);
+  this.t=setTimeout(()=>{if(this.plan().length)this.push();else{this.setDirty(false);if(this.st==='saving')this.setSt('saved')}},1500)},
+ async fetchRemote(){
+  const lim=p=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej({code:'unavailable'}),20000))]);
+  const rows=[];
+  for(let f=0;;f+=1000){const{data,error}=await lim(this.sb.from('app_docs').select('key,data').range(f,f+999));if(error)throw error;rows.push(...data);if(data.length<1000)break}
+  const r={settings:null,sessions:[],habits:{},keys:{}};
+  rows.forEach(row=>{const v=jclone(row.data),k=row.key;
+   if(k==='p'){r.settings=v.settings||null;r.keys.p=stab(v)}
+   else if(k[0]==='s'){r.sessions.push(v);r.keys[k]=stab(v)}
+   else if(k[0]==='h'){Object.assign(r.habits,v.days||{});r.keys[k]=stab(v)}});
+  r.sessions.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||(a.start||0)-(b.start||0));
+  return r},
+ async load(){
+  const r=await this.fetchRemote();
+  const empty=!r.settings&&!r.sessions.length&&!Object.keys(r.habits).length;
+  if(this.dirty||empty){
+   const have=new Set(S.sessions.map(s=>s.id));
+   r.sessions.forEach(s=>{if(!have.has(s.id))S.sessions.push(s)});
+   for(const[d,v]of Object.entries(r.habits))S.habits[d]=Object.assign({},v,S.habits[d]||{});
+   this.last=r.keys;
+  }else{
+   S.sessions=r.sessions;S.habits=r.habits;
+   if(r.settings)S.settings=Object.assign({},DEF.settings,r.settings);
+   this.last={};const d=this.desired();for(const k in d)this.last[k]=stab(d[k]);
+  }
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+ },
+ async start(session){
+  this.uid=session.user.id;this.email=session.user.email||'';
+  this.setSt('loading');
+  await this.load();migRest();
+  this.ready=true;this.pulled=Date.now();
+  if(this.plan().length)await this.push();else{this.setDirty(false);this.setSt('saved')}
+  if(!(VIEW==='workout'&&S.draft))render();
+ },
+ async init(){
+  try{
+   try{if(localStorage.getItem(DIRTY_KEY))this.dirty=true}catch(e){}
+   const configured=window.supabase&&/^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(SUPABASE_URL)&&!/YOUR-/.test(SUPABASE_URL+SUPABASE_ANON_KEY);
+   if(!configured){this.setSt('local');return}
+   if(!this.sb){
+    this.sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    this.sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&this.ready){this.ready=false;this.email='';this.setSt('signin');showAuth()}});
+   }
+   this.setSt('loading');
+   const{data,error}=await this.sb.auth.getSession();
+   if(!data||!data.session){
+    if(error&&(error.name==='AuthRetryableFetchError'||/fetch|network/i.test(error.message||''))){this.setSt('offline');clearTimeout(this.rt);this.rt=setTimeout(()=>this.init(),20000);return}
+    this.setSt('signin');showAuth();return}
+   await this.start(data.session)
+  }catch(e){console.error(e);this.setSt('offline');clearTimeout(this.rt);this.rt=setTimeout(()=>this.init(),20000)}
+ },
+ async refresh(){
+  if(!this.ready||this.busy||this.dirty||Date.now()-this.pulled<30000)return;
+  this.pulled=Date.now();
+  try{
+   const before=stab([S.sessions,S.habits,S.settings]);
+   await this.load();migRest();
+   if(before!==stab([S.sessions,S.habits,S.settings])&&!(VIEW==='workout'&&S.draft))render();
+  }catch(e){}
+ }
+};
+function showAuth(msg){
+ let el=$('#auth');
+ if(!el){
+  el=document.createElement('div');el.id='auth';
+  el.style.cssText='position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto';
+  el.innerHTML=`<div class="card" style="width:100%;max-width:380px"><h2 style="margin-top:0">Foundational Fitness Tracker</h2><p class="small muted">Sign in to load and save your data.</p>
+   <label class="f">Email<input id="authEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off"></label>
+   <label class="f" style="margin-top:8px">Password<input id="authPw" type="password" autocomplete="current-password"></label>
+   <p id="authMsg" class="small" style="color:var(--bad);min-height:18px;margin:8px 0"></p>
+   <div class="row"><button class="btn pri" id="authGo">Sign in</button><button class="btn" id="authSkip">Use on this device only</button></div></div>`;
+  document.body.appendChild(el);
+  const go=async()=>{
+   const email=$('#authEmail').value.trim(),pw=$('#authPw').value,m=$('#authMsg'),b=$('#authGo');
+   if(!email||!pw){m.textContent='Enter your email and password.';return}
+   if(!Sync.sb){m.textContent='Cloud sync is not set up in this copy of the app.';return}
+   b.disabled=true;m.textContent='';
+   try{
+    const{data,error}=await Sync.sb.auth.signInWithPassword({email,password:pw});
+    if(error){m.textContent=error.message;b.disabled=false;return}
+    el.remove();
+    await Sync.start(data.session);
+   }catch(e){console.error(e);if($('#authMsg')){$('#authMsg').textContent='Could not reach the server. Check your connection and try again.';$('#authGo').disabled=false}}
+  };
+  $('#authGo').addEventListener('click',go);
+  $('#authPw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+  $('#authSkip').addEventListener('click',()=>{el.remove();Sync.setSt('local')});
+ }
+ if(msg)$('#authMsg').textContent=msg;
+}
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){if(Sync.ready&&Sync.dirty){clearTimeout(Sync.t);Sync.push()}}
+ else{wake();Sync.refresh()}
+});
+
+
+/* ---------- derived ---------- */
+const maxHR=()=>220-num(S.settings.age||55);
+const z2=()=>[Math.round(maxHR()*.6),Math.round(maxHR()*.7)];
+const modHR=()=>[Math.round(maxHR()*.75),Math.round(maxHR()*.8)];
+/* 7-day cycles counted from a start date you choose (no fixed weekdays) */
+function cycleStart(){if(S.settings.cycleStart)return S.settings.cycleStart;const ds=S.sessions.map(s=>s.date).sort();return ds[0]||todayStr()}
+const weekStart=ds=>{const cs=parse(cycleStart());const diff=Math.round((parse(ds)-cs)/86400000);return ymd(addDays(cs,7*Math.floor(diff/7)))};
+const cycleNum=ds=>Math.floor(Math.round((parse(ds)-parse(cycleStart()))/86400000)/7)+1;
+function nextDay(){const ws=weekStart(todayStr());const done=new Set(sessionsIn(ws,ymd(addDays(parse(ws),7))).map(s=>s.day));const n=DAYS.find(d=>!done.has(d.n));return n?n.n:1}
+function schedFor(ds){const[y,m]=ds.split('-').map(Number);const[ay,am]=S.settings.schedAStart.split('-').map(Number);const diff=(y*12+m)-(ay*12+am);return ((diff%2)+2)%2===0?'A':'B'}
+const exName=id=>EX[id]?EX[id].n:(id||'').replace(/^custom:/,'');
+const exUnit=id=>(EX[id]&&EX[id].u==='sec')?'sec':'reps';
+const vidFor=id=>S.settings.videos[id]||(EX[id]?yt(EX[id].q):yt(exName(id)+' exercise form'));
+const sessionsIn=(from,toExcl)=>S.sessions.filter(s=>s.date>=from&&s.date<toExcl);
+const coldMin=s=>(s.rounds||[]).reduce((a,r)=>a+num(r),0)/60+num(s.extraCold);
+function z2Min(list){return list.filter(s=>s.kind==='cardio'&&s.z2).reduce((a,s)=>a+num(s.min),0)}
+function coldTotal(list){return list.filter(s=>s.kind==='cold').reduce((a,s)=>a+coldMin(s),0)}
+const e1rm=(w,r)=>w>0&&r>0?w*(1+r/30):0;
+function lastPerf(ex,sched,excludeId){
+ const list=S.sessions.filter(s=>s.kind==='resistance'&&s.id!==excludeId).sort((a,b)=>b.date.localeCompare(a.date)||(b.start||0)-(a.start||0));
+ let any=null;
+ for(const s of list){const e=(s.exercises||[]).find(x=>x.ex===ex&&x.sets.some(st=>st.done||st.r));
+  if(e){const rec={date:s.date,sched:s.sched,sets:e.sets.filter(st=>st.done||st.r)};if(s.sched===sched)return rec;any=any||rec}}
+ return any;
+}
+const LOGV2=n=>n===2||n===4||n===7;
+const neckLine=s=>{const n=[s.neckExt&&'extension',s.neckFlex&&'flexion',s.neckLatL&&'lateral left',s.neckLatR&&'lateral right'].filter(Boolean);return n.length?`<div class="small muted">Neck: ${n.join(', ')}</div>`:''};
+function makeSets(ex,sched,day){const last=lastPerf(ex,sched);const n=last?Math.max(last.sets.length,1):SCHED[sched].defSets;
+ return Array.from({length:n},(_,i)=>({w:last&&last.sets[i]?last.sets[i].w:'',r:'',done:false,t:LOGV2(day)&&i<2?'warmup':'working'}))}
+function habitDone(ds,id){if(id==='exercise'){if(S.sessions.some(s=>s.date===ds&&s.day!==0))return true}return !!(S.habits[ds]&&S.habits[ds][id])}
+function dayScore(ds){return COREH.filter(h=>habitDone(ds,h.id)).length/COREH.length}
+function trackStart(){const ds=[...Object.keys(S.habits).filter(k=>Object.values(S.habits[k]).some(Boolean)),...S.sessions.map(s=>s.date)].sort();return ds[0]||todayStr()}
+function habitRate(days,id){const start=trackStart();let n=0,hit=0;for(let i=0;i<days;i++){const ds=ymd(addDays(new Date(),-i));if(ds<start)break;n++;if(id?habitDone(ds,id):dayScore(ds)>=0.85)hit++;}return n?hit/n:0}
+function avgScore(days){const start=trackStart();let n=0,t=0;for(let i=0;i<days;i++){const ds=ymd(addDays(new Date(),-i));if(ds<start)break;n++;t+=dayScore(ds)}return n?t/n:0}
+
+/* ---------- session lifecycle ---------- */
+function newSession(dayN,date){
+ const d=dayInfo(dayN);const sched=schedFor(date);
+ const s={id:uid(),date,day:dayN,kind:d.kind,sched,start:Date.now(),notes:'',rpe:'',duration:''};
+ if(d.kind==='resistance'){s.warmup=false;s.breath=false;if(dayN===4||dayN===7){s.neckExt=false;s.neckFlex=false;s.neckLatL=false;s.neckLatR=false}s.exercises=SLOTS[dayN].map(sl=>{const ex=S.settings.choices[sl.id]||sl.o[0];return{slot:sl.id,ex,sets:makeSets(ex,sched,dayN)}})}
+ if(d.kind==='cardio'){const prev=S.sessions.filter(x=>x.kind==='cardio'&&x.day===dayN).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  Object.assign(s,{mod:prev?prev.mod:(dayN===0?'Outdoor walk / hike':'Peloton Bike'),min:'',hr:'',dist:'',out:'',nasal:false,vest:false,outside:false,z2:!!d.z2})}
+ if(d.kind==='hiit')Object.assign(s,{mod:'Peloton Bike sprints',work:30,rest:10,target:10,rounds:'',hrs:[]});
+ if(d.kind==='cold')Object.assign(s,{rounds:[],extraCold:'',hot:'',temp:'',endCold:false});
+ return s;
+}
+async function startDay(dayN,date){
+ if(S.draft&&!(await confirmP('You have a workout in progress ('+dayInfo(S.draft.day).title+'). Discard it and start a new one?','Discard and start',true)))return;
+ S.draft=newSession(dayN,date||todayStr());HT.phase='idle';HT.running=false;CT.running=false;save(true);go('workout');
+}
+function finishDraft(){
+ const d=S.draft;if(!d)return;
+ if(!d.duration&&d.start&&!d.editing)d.duration=Math.min(180,Math.round((Date.now()-d.start)/60000))||'';
+ if(d.kind==='resistance'){d.exercises.forEach(e=>e.sets=e.sets.filter(st=>st.done||st.r));d.exercises=d.exercises.filter(e=>e.sets.length)}
+ const editing=d.editing;delete d.editing;
+ const i=S.sessions.findIndex(s=>s.id===d.id);if(i>=0)S.sessions[i]=d;else S.sessions.push(d);
+ S.draft=null;stopRest();HT.running=false;CT.running=false;save(true);toast(editing?'Workout updated':'Workout saved');go('today');
+}
+
+/* ---------- timers ---------- */
+let actx;
+function beep(f=880,ms=180,n=1,vib=150){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+ for(let i=0;i<n;i++){const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);const t=actx.currentTime+i*(ms/1000+.09);g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+ms/1000);o.start(t);o.stop(t+ms/1000+.02)}}catch(e){}
+ if(navigator.vibrate)navigator.vibrate(vib)}
+const RT={on:false,end:0,label:''};
+function startRest(sec,label){RT.on=true;RT.end=Date.now()+sec*1000;RT.label=label||'Rest';RT.warned=false;$('#timerbar').style.display='block';beep(660,90)}
+function stopRest(){RT.on=false;$('#timerbar').style.display='none'}
+const HT={phase:'idle',round:0,endAt:0,remain:0,running:false};
+const CT={running:false,start:0};
+function htStart(){const d=S.draft;if(HT.phase==='idle'||HT.phase==='done'){HT.phase='ready';HT.round=0;HT.remain=3000}HT.running=true;HT.endAt=Date.now()+HT.remain;beep(660,120);render()}
+function htPause(){HT.running=false;HT.remain=HT.endAt-Date.now();render()}
+function htReset(){HT.phase='idle';HT.running=false;HT.round=0;render()}
+function htAdvance(){const d=S.draft;const target=Math.max(1,num(d.target)||10);
+ if(HT.phase==='work'){S.draft.rounds=HT.round;save();hiitLogRound();if(HT.round>=target){htDone();return}HT.phase='rest';HT.endAt+=num(d.rest||10)*1000;beep(392,650,1,500)}
+ else{HT.phase='work';HT.round++;HT.endAt+=num(d.work||30)*1000;beep(1175,110,2,[90,50,90])}}
+const hrRow=(i,v)=>`<label class="f" style="text-align:center">R${i+1}HR<input type="text" inputmode="numeric" style="text-align:center;padding:7px 4px;min-width:0;width:100%" data-hr="${i}" value="${esc(v||'')}" placeholder="bpm"></label>`;
+function hiitDuration(d,n){const sec=n*num(d.work||30)+Math.max(0,n-1)*num(d.rest||10);return Math.round(sec/6)/10}
+function hiitLogRound(){const n=HT.round,c=$('#hrCount'),l=$('#hrList');S.draft.duration=hiitDuration(S.draft,n);save();const di=document.querySelector('[data-f=duration]');if(di)di.value=S.draft.duration;if(c)c.textContent=n;if(l&&!l.querySelector(`[data-hr="${n-1}"]`))l.insertAdjacentHTML('beforeend',hrRow(n-1,(S.draft.hrs||[])[n-1]))}
+function htDone(){HT.phase='done';HT.running=false;S.draft.rounds=HT.round;save();beep(880,200,3);render()}
+function tick(){
+ if(RT.on){const left=(RT.end-Date.now())/1000;$('#tbLabel').textContent=RT.label;$('#tbTime').textContent=mmss(left);
+  if(left<=10&&!RT.warned){RT.warned=true;beep(740,80)}if(left<=0){beep(880,220,3);stopRest()}}
+ if(HT.running){if(Date.now()>=HT.endAt)htAdvance();const el=$('#htT');if(el){el.textContent=mmss((HT.endAt-Date.now())/1000);const box=$('#htBox');box.className='timer '+HT.phase;$('#htPh').textContent=HT.phase==='ready'?'Get ready':HT.phase==='work'?'SPRINT: all out':'Rest';$('#htR').textContent=`Round ${HT.round} / ${S.draft.target||10}`}}
+ if(CT.running){const el=$('#ctT');if(el)el.textContent=mmss((Date.now()-CT.start)/1000)}
+}
+setInterval(tick,200);
+
+/* ---------- charts ---------- */
+function lineChart(pts,h=190,unit=''){
+ if(!pts.length)return '<p class="muted small">No data yet.</p>';
+ const W=640,H=h,pl=46,pr=30,pt=12,pb=26;const ys=pts.map(p=>p.y);let mn=Math.min(...ys),mx=Math.max(...ys);if(mn===mx){mn-=5;mx+=5}const pd=(mx-mn)*.12;mn-=pd;mx+=pd;
+ const X=i=>pl+(pts.length===1?(W-pl-pr)/2:i*(W-pl-pr)/(pts.length-1));const Y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));
+ let g='';for(let k=0;k<=3;k++){const v=mn+(mx-mn)*k/3;g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end">${Math.round(v)}</text>`}
+ const path=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join('');
+ const dots=pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="var(--acc)"><title>${esc(p.x)}: ${Math.round(p.y)}${unit}</title></circle>`).join('');
+ const lbl=[0,Math.floor((pts.length-1)/2),pts.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${esc(pts[i].x)}</text>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${g}<path d="${path}" fill="none" stroke="var(--acc)" stroke-width="2.5"/>${dots}${lbl}</svg>`;
+}
+function barChart(bars,target,h=170,unit=''){
+ const W=640,H=h,pl=40,pr=10,pt=12,pb=26;const mx=Math.max(target*1.15,...bars.map(b=>b.y),1);const bw=(W-pl-pr)/bars.length;const Y=v=>pt+(H-pt-pb)*(1-v/mx);
+ let s='';bars.forEach((b,i)=>{const x=pl+i*bw+bw*.18,w=bw*.64;s+=`<rect x="${x}" y="${Y(b.y)}" width="${w}" height="${Math.max(0,H-pb-Y(b.y))}" rx="4" fill="${b.y>=target?'var(--good)':'var(--acc)'}"><title>${esc(b.label)}: ${Math.round(b.y)}${unit}</title></rect><text x="${x+w/2}" y="${H-8}" text-anchor="middle">${esc(b.label)}</text><text x="${x+w/2}" y="${Y(b.y)-4}" text-anchor="middle">${b.y?Math.round(b.y):''}</text>`});
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="${pl}" x2="${W-pr}" y1="${Y(target)}" y2="${Y(target)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${pl-4}" y="${Y(target)+4}" text-anchor="end">${target}</text>${s}</svg>`;
+}
+
+/* ---------- views ---------- */
+let VIEW='today',progEx='',habitDate=todayStr();
+const TABS=[['today','Today'],['workout','Workout'],['plan','Plan & Videos'],['history','History'],['progress','Progress'],['settings','Settings']];
+function go(v){VIEW=v;render();window.scrollTo(0,0);if(v==='workout')wake()}
+function render(){
+ $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="${VIEW===k?'on':''}" data-a="go" data-v="${k}">${l}${k==='workout'&&S.draft?'<span class="dot"></span>':''}</button>`).join('');
+ const sc=schedFor(todayStr());
+ $('#hdrSched').innerHTML=`<span class="tag ${sc}">This month: Schedule ${sc} · ${SCHED[sc].label}</span>`;
+ $('#app').innerHTML=({today:vToday,workout:vWorkout,plan:vPlan,history:vHistory,progress:vProgress,settings:vSettings})[VIEW]();
+}
+function schedLine(sc){const r=SCHED[sc];return `<span class="tag ${sc}">Schedule ${sc}</span> <span class="small">${r.sets} sets × ${r.reps[0]}–${r.reps[1]} reps · rest ${r.rest}</span>`}
+
+function vToday(){
+ const td=todayStr(),dn=nextDay(),d=DAYS[dn-1],ws=weekStart(td),we=ymd(addDays(parse(ws),7));
+ const wk=sessionsIn(ws,we);const doneDays=new Set(wk.map(s=>s.day));
+ const z=z2Min(wk),c=coldTotal(wk),sc=schedFor(td);
+ const chips=DAYS.map(x=>{const done=doneDays.has(x.n);
+  return `<div class="chip ${done?'done':''} ${x.n===dn&&!done?'today':''}" data-a="start" data-v="${x.n}" title="${esc(x.title)}"><b>Day ${x.n}</b>${esc(x.short)}${done?'<br>✓':''}</div>`}).join('');
+ const todayDone=doneDays.has(dn);
+ let target='';
+ if(d.kind==='cardio')target=`<p class="small"><b>Target HR:</b> ${dn===1?`Zone 2 ≈ ${z2()[0]}–${z2()[1]} bpm (rough guide, 60–70% of max). The conversation test matters most.`:`≈ ${modHR()[0]}–${modHR()[1]} bpm (75–80% of max ${maxHR()})`}</p>`;
+ if(d.kind==='hiit')target=`<p class="small"><b>Max HR target:</b> ~${maxHR()} bpm (220 − ${S.settings.age}). Built-in interval timer included.</p>`;
+ if(d.kind==='resistance')target=`<p>${schedLine(sc)}</p>`;
+ return `
+ <div class="card hero">
+  <div class="muted small">${fmtDate(td)} · Next up in this cycle</div>
+  <h2>Day ${dn}: ${esc(d.title)} ${todayDone?'<span class="tag good">Done ✓</span>':''}</h2>
+  <p>${esc(d.desc)}</p>${target}
+  <div class="row">
+   ${S.draft?`<button class="btn pri" data-a="go" data-v="workout">Continue: ${esc(dayInfo(S.draft.day).title)}</button>`:`<button class="btn pri" data-a="start" data-v="${dn}">Start Day ${dn} workout</button>`}
+   <select id="altDay">${DAYS.map(x=>`<option value="${x.n}" ${x.n===dn?'selected':''}>Day ${x.n}: ${esc(x.title)}</option>`).join('')}<option value="0">Extra Zone 2 / walk</option></select>
+   <button class="btn" data-a="startAlt">Log this instead</button>
+  </div>
+  <p class="small muted" style="margin-bottom:0">Missed a day? The protocol lets you double up later in the cycle. Swapping Day 4 and Day 5 is fine too.</p>
+ </div>
+ <div class="card"><div class="row" style="justify-content:space-between"><h3>This cycle <span class="small muted" style="font-weight:400">(Cycle ${cycleNum(td)}: ${fmtDate(ws)} – ${fmtDate(ymd(addDays(parse(ws),6)))})</span></h3><span class="small muted">${doneDays.has(0)?doneDays.size-1:doneDays.size}/7 protocol days</span></div><div class="chips">${chips}</div></div>
+ <div class="grid">
+  <div class="card"><h3>Zone 2 this cycle</h3><div class="big">${Math.round(z)} <span class="small muted">/ 180–200 min</span></div><div class="bar"><i style="width:${Math.min(100,z/180*100)}%"></i></div><button class="btn sm" data-a="start" data-v="0">+ Log extra Zone 2 / walk</button></div>
+  <div class="card"><h3>Cold exposure this cycle</h3><div class="big">${c.toFixed(1)} <span class="small muted">/ ~11 min</span></div><div class="bar"><i style="width:${Math.min(100,c/11*100)}%"></i></div><span class="small muted">Huberman's weekly total target, split across sessions</span></div>
+ </div>`;
+}
+
+function vWorkout(){
+ const d=S.draft;
+ if(!d)return `<div class="card"><h2>No workout in progress</h2><p class="muted">Pick a day to start logging.</p><div class="row">${DAYS.map(x=>`<button class="btn" data-a="start" data-v="${x.n}">Day ${x.n}: ${esc(x.title)}</button>`).join('')}<button class="btn" data-a="start" data-v="0">Extra Zone 2 / walk</button></div></div>`;
+ const info=dayInfo(d.day);
+ let h=`<div class="card"><div class="row" style="justify-content:space-between"><h2>${d.day?'Day '+d.day+': ':''}${esc(info.title)} ${d.editing?'<span class="tag warn">Editing</span>':''}</h2>
+  <label class="f">Date<input type="date" data-f="date" value="${d.date}"></label></div>${d.day===3?'':`<p class="small muted" style="margin:4px 0 0">${esc(info.desc)}</p>`}</div>`;
+ if(d.kind==='resistance')h+=wResistance(d);
+ if(d.kind==='cardio')h+=wCardio(d);
+ if(d.kind==='hiit')h+=wHiit(d);
+ if(d.kind==='cold')h+=wCold(d);
+ h+=`<div class="card">${d.day===1||LOGV2(d.day)||d.day===3||d.day===5?'':`<div class="grid"><label class="f">Duration (min)<input type="text" inputmode="numeric" data-f="duration" value="${esc(d.duration)}" placeholder="auto"></label>
+  ${d.day===6?'':`<label class="f">Effort (RPE 1–10)<input type="text" inputmode="numeric" data-f="rpe" value="${esc(d.rpe)}"></label>`}</div>
+  ${d.day===6?'':`<label class="f" style="margin-top:8px">Notes<textarea data-f="notes" placeholder="How it felt, sleep, energy…">${esc(d.notes)}</textarea></label>`}`}
+  <div class="row" style="margin-top:${d.day===1||LOGV2(d.day)||d.day===3||d.day===5?0:10}px"><button class="btn pri" data-a="finish">${d.editing?'Save changes':'Finish & save workout'}</button><button class="btn danger" data-a="discard">Discard</button></div></div>`;
+ return h;
+}
+function wResistance(d){
+ const sc=d.sched,R=SCHED[sc],u=S.settings.units;
+ let h=`<div class="card"><div class="row" style="justify-content:space-between"><div>${schedLine(sc)}</div>
+  <select data-c="sched"><option value="A" ${sc==='A'?'selected':''}>Schedule A · Heavy</option><option value="B" ${sc==='B'?'selected':''}>Schedule B · Moderate–light</option></select></div>
+  <label class="row" style="margin-top:8px"><input type="checkbox" data-f="warmup" ${d.warmup?'checked':''}> 10-minute warm-up done</label>
+  <p class="small muted" style="margin:6px 0 0">Keep hard work to 50–60 min (75 max). Ticking a set starts the rest timer (${mmss(sc==='A'?S.settings.restA:S.settings.restB)}). Don't ice bath right after lifting. Cold showers are fine.</p></div>`;
+ d.exercises.forEach((e,i)=>{
+  const sl=Object.values(SLOTS).flat().find(x=>x.id===e.slot);const ex=EX[e.ex];const unit=exUnit(e.ex);
+  const last=lastPerf(e.ex,sc,d.id);
+  let hint='';
+  if(last&&last.sched===sc&&last.sets.length&&unit==='reps'){const rs=last.sets.filter(s=>s.t!=='warmup').map(s=>num(s.r));if(rs.length&&rs.every(r=>r>=R.reps[1]))hint=`<span class="hint up">▲ Hit ${R.reps[1]}+ reps on every set last time. Add weight.</span>`;else if(rs.some(r=>r&&r<R.reps[0]))hint=`<span class="hint dn">Below ${R.reps[0]} reps last time. Hold or lighten the weight.</span>`}
+  const opts=sl?sl.o.map(o=>`<option value="${o}" ${o===e.ex?'selected':''}>${esc(EX[o].n)}</option>`).join(''):'';
+  h+=`<div class="card ex"><div class="exhead">${sl?`<span class="tag">${esc(sl.g)} · ${esc(sl.p)}</span>`:'<span class="tag">Custom</span>'}
+   ${sl&&sl.o.length>1?`<select data-c="swap" data-i="${i}">${opts}</select>`:`<b>${esc(exName(e.ex))}</b>`}
+   <a class="btn sm" href="${esc(vidFor(e.ex))}" target="_blank" rel="noopener">▶ Demo</a>${sl?'':`<button class="btn sm ghost danger" data-a="rmEx" data-i="${i}">Remove</button>`}</div>
+   ${ex?`<div class="cue">${esc(ex.cue)} <span class="pill">${esc(ex.eq)}</span></div>`:''}
+   <div class="last">${last?`<span class="muted">Last (${fmtDate(last.date)}, ${last.sched}):</span> ${last.sets.map(s=>`${s.t==='warmup'?'(W) ':''}${s.w?esc(s.w):'BW'}×${esc(s.r||'?')}`).join(' · ')}`:'<span class="muted">First time logging this exercise. Pick a weight you can move with perfect form.</span>'}</div>${hint}
+   <table class="sets${LOGV2(d.day)?' half':''}"><tr><th>Set</th><th>${unit==='sec'?'Load':u}</th><th>${unit==='sec'?'Sec':'Reps'}</th>${LOGV2(d.day)?'':'<th>Done</th>'}<th></th></tr>
+   ${e.sets.map((s,j)=>`<tr class="${s.done?'d':''}"><td>${LOGV2(d.day)?`<select class="stype" data-c="stype" data-i="${i}" data-j="${j}"><option value="warmup" ${s.t==='warmup'?'selected':''}>warmup</option><option value="working" ${s.t==='warmup'?'':'selected'}>working</option></select>`:j+1}</td><td><input type="text" inputmode="decimal" data-f="w" data-i="${i}" data-j="${j}" value="${esc(s.w)}" placeholder="${last&&last.sets[j]?esc(last.sets[j].w):'—'}"></td>
+    <td><input type="text" inputmode="numeric" data-f="r" data-i="${i}" data-j="${j}" value="${esc(s.r)}" placeholder="${LOGV2(d.day)?'':last&&last.sets[j]&&last.sets[j].r?esc(last.sets[j].r):(unit==='sec'?'10':R.reps[0]+'–'+R.reps[1])}"></td>
+    ${LOGV2(d.day)?'':`<td><input type="checkbox" data-a="doneSet" data-i="${i}" data-j="${j}" ${s.done?'checked':''}></td>`}<td><button class="btn sm ghost" data-a="rmSet" data-i="${i}" data-j="${j}" title="Remove set">✕</button></td></tr>`).join('')}
+   </table><button class="btn sm" data-a="addSet" data-i="${i}" style="margin-top:6px">+ Set</button></div>`;
+ });
+ if(d.day===4||d.day===7)h+=`<div class="card ex"><div class="exhead"><span class="tag">Neck</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:8px">
+  <label class="row"><input type="checkbox" data-f="neckExt" ${d.neckExt?'checked':''}> extension</label>
+  <label class="row"><input type="checkbox" data-f="neckFlex" ${d.neckFlex?'checked':''}> flexion</label>
+  <label class="row"><input type="checkbox" data-f="neckLatL" ${d.neckLatL?'checked':''}> lateral left</label>
+  <label class="row"><input type="checkbox" data-f="neckLatR" ${d.neckLatR?'checked':''}> lateral right</label></div></div>`;
+ h+=`<div class="card"><div class="row"><button class="btn" data-a="addEx">+ Add another exercise</button></div>
+  <label class="row" style="margin-top:10px"><input type="checkbox" data-f="breath" ${d.breath?'checked':''}> 3–5 min slow breathing after the session to downshift</label></div>`;
+ return h;
+}
+function wCardio(d){
+ const isZ2=d.day===1||d.day===0;const r=isZ2?z2():modHR();const u=S.settings.units==='kg'?'km':'mi';
+ return `<div class="card"><p class="small"><b>${isZ2?'Zone 2':'Moderate'} target:</b> ${r[0]}–${r[1]} bpm${isZ2?' (rough guide). You should be breathing harder but still able to talk.':' (75–80% of max).'} ${d.day===1?'Aim for ≥30 min, building toward 60–75.':d.day===5?'Aim for 35 min, ideally outside.':''}</p>
+  <div class="grid">
+   <label class="f">Activity<select data-f="mod">${CARDIO_MODS.map(m=>`<option ${m===d.mod?'selected':''}>${esc(m)}</option>`).join('')}</select></label>
+   <label class="f">Minutes<input type="text" inputmode="numeric" data-f="min" value="${esc(d.min)}" placeholder="${d.day===5?'35':d.day===1?'60':'20'}"></label>
+   <label class="f">Avg heart rate<input type="text" inputmode="numeric" data-f="hr" value="${esc(d.hr)}" placeholder="bpm"></label>
+   <label class="f">Distance (${u})<input type="text" inputmode="decimal" data-f="dist" value="${esc(d.dist)}"></label>
+   ${d.day===1||d.day===5?'':`<label class="f">Peloton output (kJ)<input type="text" inputmode="numeric" data-f="out" value="${esc(d.out)}"></label>`}
+  </div>
+  ${d.day===1||d.day===5?'':`<div class="row" style="margin-top:10px">
+   <label class="row"><input type="checkbox" data-f="nasal" ${d.nasal?'checked':''}> Mostly nasal breathing</label>
+   <label class="row"><input type="checkbox" data-f="vest" ${d.vest?'checked':''}> Weighted vest/backpack</label>
+   <label class="row"><input type="checkbox" data-f="outside" ${d.outside?'checked':''}> Outdoors</label>
+   <label class="row"><input type="checkbox" data-f="z2" ${d.z2?'checked':''}> Count toward weekly Zone 2</label>
+  </div>`}
+  <p class="small muted">On the Peloton Bike, low-impact or Power Zone Endurance rides usually fit Zone 2. On the Tread, an incline walk is an easy way to stay in Zone 2.</p></div>`;
+}
+function wHiit(d){
+ const ph=HT.phase;const showT=ph==='idle'?'0:03':ph==='done'?'Done':mmss((HT.running?HT.endAt-Date.now():HT.remain)/1000);
+ return `<div class="card"><p class="small"><b>Target:</b> all-out sprints, trying to reach max HR (~${maxHR()} bpm). Pick an exercise you can do with perfect form.</p>
+  <div class="grid">
+   <label class="f">Activity<select data-f="mod">${HIIT_MODS.map(m=>`<option ${m===d.mod?'selected':''}>${esc(m)}</option>`).join('')}</select></label>
+   <label class="f">Sprint (sec, 20–60)<input type="text" inputmode="numeric" data-f="work" value="${esc(d.work)}"></label>
+   <label class="f">Rest (sec)<input type="text" inputmode="numeric" data-f="rest" value="${esc(d.rest)}"></label>
+   <label class="f">Rounds planned (8–12)<input type="text" inputmode="numeric" data-f="target" value="${esc(d.target)}"></label>
+  </div>
+  <div class="timer ${ph}" id="htBox"><div class="ph" id="htPh">${ph==='idle'?'Ready when you are':ph==='done'?'Complete':ph==='ready'?'Get ready':ph==='work'?'SPRINT: all out':'Rest'}</div>
+   <div class="tt" id="htT">${showT}</div><div id="htR">Round ${HT.round} / ${esc(d.target||10)}</div></div>
+  <div class="row">${HT.running?'<button class="btn" data-a="htPause">Pause</button>':`<button class="btn pri" data-a="htStart">${ph==='idle'||ph==='done'?'Start intervals':'Resume'}</button>`}<button class="btn" data-a="htReset">Reset</button><span class="small muted">Beeps mark each change. Keep the screen on.</span></div>
+  <div class="small" style="margin-top:10px">Rounds completed: <b id="hrCount">${num(d.rounds)||0}</b> <span class="muted">(logged automatically)</span></div>
+  <div id="hrList" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${Array.from({length:num(d.rounds)||0},(_,i)=>hrRow(i,(d.hrs||[])[i])).join('')}</div></div>`;
+}
+function wCold(d){
+ const old=(d.rounds||[]).length?`<p class="small muted" style="margin:8px 0 0">Includes ${(d.rounds.reduce((a,r)=>a+num(r),0)/60).toFixed(1)} min from earlier timed rounds.</p>`:'';
+ return `<div class="card"><div class="grid">
+   <label class="f">Sauna (minutes)<input type="text" inputmode="decimal" data-f="hot" value="${esc(d.hot)}"></label>
+   <label class="f">Cold (minutes)<input type="text" inputmode="decimal" data-f="extraCold" value="${esc(d.extraCold)}"></label>
+  </div>${old}</div>`;
+}
+
+function vPlan(){
+ const libGroups={};Object.entries(EX).forEach(([id,e])=>{(libGroups[e.g]=libGroups[e.g]||[]).push([id,e])});
+ return `<div class="card"><h2>Weekly protocol</h2><p class="small muted">Do the days in order (Day 1 → Day 7) starting whenever you like. Each 7-day cycle counts from your cycle start date (Settings). Each muscle group gets trained twice a week: once directly, once indirectly.</p>
+  <table><tr><th>Day</th><th>Focus</th><th>What to do</th></tr>${DAYS.map(d=>`<tr><td><b>${d.n}</b></td><td><b>${esc(d.title)}</b></td><td class="small">${esc(d.desc)}<br><span class="muted">Examples: ${esc(d.examples)}</span></td></tr>`).join('')}</table></div>
+ <div class="grid">
+  <div class="card"><h3><span class="tag A">Schedule A · Heavy</span></h3><p class="small">~4–8 reps, 3–4 sets per exercise, 2–4 min rest between sets.</p></div>
+  <div class="card"><h3><span class="tag B">Schedule B · Moderate–light</span></h3><p class="small">~8–15 reps, 2–3 sets per exercise, ~90 s rest between sets.</p></div>
+ </div>
+ <div class="card"><h3>Key principles</h3><ul class="small">
+  <li>Alternate Schedule A and B monthly. The app does this automatically (Settings → swap if needed).</li>
+  <li>Two exercises per muscle group: one hits the muscle in its <b>shortened</b> (fully contracted) position, one in its <b>lengthened</b> (stretched) position.</li>
+  <li>10-min warm-up, then 50–60 min of hard work, 75 min max (rest included).</li>
+  <li>Between sets, use physiological sighs. After training, do 3–5 min of slow breathing.</li>
+  <li>Skip ice baths right after resistance training: wait 6–8 hrs or do them before. Cold showers likely don't blunt gains.</li>
+  <li>Mild cold symptoms: cut volume or intensity by 50%+. If you're truly sick, rest, then ramp back up over 3–7 days. If you're under poor sleep or heavy stress, consider NSDR and doubling up later.</li>
+  <li>The best exercise is the one you can do safely, with full range of motion and good form.</li></ul></div>
+ <div class="card"><h3>Huberman videos & resources</h3><ul>${VIDEOS.map(v=>`<li><a href="${v.u}" target="_blank" rel="noopener">${esc(v.t)}</a></li>`).join('')}</ul></div>
+ <div class="card"><h3>Exercise library (adapted to your home gym)</h3><p class="small muted">Dumbbells, barbell + rack + plates, adjustable bench, pull-up bar, Peloton Bike & Tread. "▶ Demo" opens a YouTube search for form videos. Use "Set video" to save a specific video you like.</p>
+  ${Object.entries(libGroups).map(([g,list])=>`<h3 style="margin-top:14px">${esc(g)}</h3><table class="lib">${list.map(([id,e])=>`<tr><td>${esc(e.n)} <span class="pill">${esc(e.p)}</span><div class="small muted" style="font-weight:400">${esc(e.cue)}</div></td><td class="small muted">${esc(e.eq)}</td><td style="white-space:nowrap"><a class="btn sm" href="${esc(vidFor(id))}" target="_blank" rel="noopener">▶ Demo</a> <button class="btn sm ghost" data-a="setVid" data-v="${id}">${S.settings.videos[id]?'Change video':'Set video'}</button></td></tr>`).join('')}</table>`).join('')}
+ </div>`;
+}
+
+function summary(s){
+ if(s.kind==='resistance'){const sets=s.exercises.reduce((a,e)=>a+e.sets.length,0);const vol=s.exercises.reduce((a,e)=>a+e.sets.reduce((b,st)=>b+num(st.w)*num(st.r),0),0);
+  return `${s.exercises.length} exercises · ${sets} sets${vol?` · ${Math.round(vol).toLocaleString()} ${S.settings.units} volume`:''}<div class="small muted">${s.exercises.map(e=>`${esc(exName(e.ex))}: ${e.sets.map(st=>`${st.w||'BW'}×${st.r||'?'}`).join(', ')}`).join('<br>')}</div>${neckLine(s)}`}
+ if(s.kind==='cardio')return `${esc(s.mod)} · ${esc(s.min||'?')} min${s.hr?` · ${esc(s.hr)} bpm`:''}${s.dist?` · ${esc(s.dist)} ${S.settings.units==='kg'?'km':'mi'}`:''}${s.out?` · ${esc(s.out)} kJ`:''}${s.z2?' · Zone 2':''}`;
+ if(s.kind==='hiit')return `${esc(s.mod)} · ${esc(s.rounds||'?')} rounds of ${esc(s.work)}s/${esc(s.rest)}s${s.maxhr?` · peak ${esc(s.maxhr)} bpm`:''}${(s.hrs||[]).slice(0,num(s.rounds)||0).some(Boolean)?` · HR ${(s.hrs||[]).slice(0,num(s.rounds)||0).map(h=>h||'–').join(', ')}`:''}`;
+ if(s.kind==='cold')return `${(s.rounds||[]).length?`${s.rounds.length} cold round(s) · `:''}${coldMin(s).toFixed(1)} min cold${s.hot?` · ${esc(s.hot)} min sauna`:''}`;
+ return '';
+}
+function vHistory(){
+ const list=[...S.sessions].sort((a,b)=>b.date.localeCompare(a.date)||(b.start||0)-(a.start||0));
+ if(!list.length)return `<div class="card"><h2>History</h2><p class="muted">Nothing logged yet. Your saved workouts will show up here.</p></div>`;
+ return `<div class="card"><h2>History</h2><p class="small muted">${list.length} sessions logged</p></div>`+list.map(s=>`<div class="card"><div class="sess"><div><b>${fmtDate(s.date)}</b>: ${s.day?'Day '+s.day+' · ':''}${esc(dayInfo(s.day).title)} ${s.kind==='resistance'?`<span class="tag ${s.sched}">${s.sched}</span>`:''}${s.duration?` <span class="pill">${esc(s.duration)} min</span>`:''}${s.rpe?` <span class="pill">RPE ${esc(s.rpe)}</span>`:''}</div>
+  <div class="row"><button class="btn sm" data-a="edit" data-v="${s.id}">Edit</button><button class="btn sm ghost danger" data-a="del" data-v="${s.id}">Delete</button></div></div>
+  <div class="small" style="margin-top:4px">${summary(s)}</div>${s.notes?`<div class="small muted" style="margin-top:4px">“${esc(s.notes)}”</div>`:''}</div>`).join('');
+}
+
+function vProgress(){
+ const ws=weekStart(todayStr());const weeks=[];for(let i=7;i>=0;i--){const st=ymd(addDays(parse(ws),-7*i));const en=ymd(addDays(parse(st),7));const l=sessionsIn(st,en);const d=parse(st);
+  weeks.push({label:`${MON[d.getMonth()]} ${d.getDate()}`,z:z2Min(l),c:coldTotal(l),w:new Set(l.filter(s=>s.day>0).map(s=>s.day)).size})}
+ const used=[...new Set(S.sessions.filter(s=>s.kind==='resistance').flatMap(s=>s.exercises.map(e=>e.ex)))];
+ if(!progEx||!used.includes(progEx))progEx=used[0]||'';
+ let exHtml='<p class="muted small">Log a resistance workout to see strength trends.</p>';
+ if(progEx){const rows=S.sessions.filter(s=>s.kind==='resistance').sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const e=s.exercises.find(x=>x.ex===progEx);if(!e)return null;
+   const best=Math.max(0,...e.sets.map(st=>e1rm(num(st.w),num(st.r))));const top=Math.max(0,...e.sets.map(st=>num(st.w)));const reps=Math.max(0,...e.sets.map(st=>num(st.r)));return{s,e,best,top,reps}}).filter(Boolean);
+  const useW=rows.some(r=>r.best>0);const pts=rows.map(r=>({x:fmtDate(r.s.date),y:useW?r.best:r.reps}));
+  const pr=rows.reduce((m,r)=>r.best>m.best?r:m,{best:0});
+  exHtml=`<p class="small muted">${useW?`Estimated 1-rep max (Epley) per session, in ${S.settings.units}`:'Best reps/seconds per session'}${pr.best?` · Best: ${Math.round(pr.best)} ${S.settings.units} e1RM on ${fmtDate(pr.s.date)}`:''}</p>${lineChart(pts,200)}
+   <table class="small"><tr><th>Date</th><th>Sched</th><th>Sets</th></tr>${rows.slice(-10).reverse().map(r=>`<tr><td>${fmtDate(r.s.date)}</td><td><span class="tag ${r.s.sched}">${r.s.sched}</span></td><td>${r.e.sets.map(st=>`${st.w||'BW'}×${st.r||'?'}`).join(' · ')}</td></tr>`).join('')}</table>`}
+ return `<div class="card"><h3>Zone 2 minutes per cycle</h3><p class="small muted">Target 180–200 min per 7-day cycle (dashed line = 180)</p>${barChart(weeks.map(w=>({label:w.label,y:w.z})),180,170,' min')}</div>
+ <div class="card"><h3>Cold minutes per cycle</h3>${barChart(weeks.map(w=>({label:w.label,y:w.c})),11,160,' min')}</div>
+ <div class="card"><h3>Protocol days completed per cycle</h3>${barChart(weeks.map(w=>({label:w.label,y:w.w})),7,160,' days')}</div>
+ <div class="card"><div class="row" style="justify-content:space-between"><h3>Strength progress</h3>${used.length?`<select data-c="progEx">${used.map(u=>`<option value="${esc(u)}" ${u===progEx?'selected':''}>${esc(exName(u))}</option>`).join('')}</select>`:''}</div>${exHtml}</div>`;
+}
+
+function vSettings(){
+ const s=S.settings;const sc=schedFor(todayStr());
+ return `<div class="card"><h2>Settings</h2><div class="grid">
+  <label class="f">Age (for heart-rate targets)<input type="text" inputmode="numeric" data-set="age" value="${esc(s.age)}"></label>
+  <label class="f">Weight units<select data-set="units"><option value="lb" ${s.units==='lb'?'selected':''}>lb</option><option value="kg" ${s.units==='kg'?'selected':''}>kg</option></select></label>
+  <label class="f">Cycle start date (Day 1 of cycle 1)<input type="date" data-set="cycleStart" value="${esc(cycleStart())}"></label>
+  <label class="f">Rest timer: Schedule A (sec)<input type="text" inputmode="numeric" data-set="restA" value="${esc(s.restA)}"></label>
+  <label class="f">Rest timer: Schedule B (sec)<input type="text" inputmode="numeric" data-set="restB" value="${esc(s.restB)}"></label>
+ </div>
+ <div class="row" style="margin-top:8px"><button class="btn sm" data-a="newCycle">Start a new cycle today</button><span class="small muted">Day 1 of the next cycle begins today.</span></div>
+ <p class="small">Max HR ≈ <b>${maxHR()}</b> bpm · Zone 2 ≈ <b>${z2()[0]}–${z2()[1]}</b> · Moderate (Day 5) ≈ <b>${modHR()[0]}–${modHR()[1]}</b></p></div>
+ <div class="card"><h3>Schedule A/B rotation</h3><p class="small">This month is <span class="tag ${sc}">Schedule ${sc}</span>. It flips automatically each calendar month.</p><button class="btn" data-a="swapAB">Swap A/B for this month onward</button></div>
+ <div class="card"><h3>Backup & data</h3><p class="small muted">Your data is saved in this browser and, when you are signed in, synced to your private database. Export a backup now and then, and import it to move data between copies of the app.</p>
+  <div class="row"><button class="btn" data-a="export">Export backup (.json)</button><label class="btn">Import backup<input type="file" accept=".json,application/json" id="imp" style="display:none"></label><button class="btn" data-a="csv">Export sets (.csv)</button><button class="btn danger" data-a="reset">Erase all data</button></div></div>
+ <div class="card"><h3>Account</h3><p class="small muted">${Sync.email?`Signed in as <b>${esc(Sync.email)}</b>. Your data syncs to your private database.`:'Not signed in. Data is saved on this device only.'}</p><div class="row">${Sync.email?'<button class="btn" data-a="signOut">Sign out</button>':'<button class="btn pri" data-a="signIn">Sign in</button>'}</div></div>`;
+}
+
+/* ---------- actions ---------- */
+const ACT={
+ go:a=>go(a.dataset.v),
+ start:a=>startDay(+a.dataset.v),
+ startAlt:()=>startDay(+$('#altDay').value),
+ finish:()=>finishDraft(),
+ discard:async()=>{if(await confirmP('Discard this workout?','Discard',true)){S.draft=null;stopRest();HT.running=false;CT.running=false;save(true);go('today')}},
+ addSet:a=>{const e=S.draft.exercises[+a.dataset.i];const l=e.sets[e.sets.length-1];e.sets.push({w:l?l.w:'',r:'',done:false,t:'working'});save();render()},
+ rmSet:a=>{S.draft.exercises[+a.dataset.i].sets.splice(+a.dataset.j,1);save();render()},
+ rmEx:a=>{S.draft.exercises.splice(+a.dataset.i,1);save();render()},
+ addEx:async()=>{const n=await promptP('Exercise name (e.g. Farmer carry):');if(!n||!n.trim())return;const id='custom:'+n.trim();if(!S.settings.custom.includes(id))S.settings.custom.push(id);S.draft.exercises.push({slot:null,ex:id,sets:makeSets(id,S.draft.sched,S.draft.day)});save();render()},
+ doneSet:a=>{const st=S.draft.exercises[+a.dataset.i].sets[+a.dataset.j];st.done=a.checked;
+  if(st.done){if(!st.r){const inp=document.querySelector(`input[data-f=r][data-i="${a.dataset.i}"][data-j="${a.dataset.j}"]`);if(inp&&inp.placeholder&&/^\d+$/.test(inp.placeholder))st.r=inp.placeholder}
+   if(!st.w){const inp=document.querySelector(`input[data-f=w][data-i="${a.dataset.i}"][data-j="${a.dataset.j}"]`);if(inp&&inp.placeholder&&inp.placeholder!=='—')st.w=inp.placeholder}
+   startRest(S.draft.sched==='A'?num(S.settings.restA):num(S.settings.restB),'Rest · '+exName(S.draft.exercises[+a.dataset.i].ex))}
+  save();render()},
+ tbAdj:a=>{RT.end+=num(a.dataset.v)*1000},
+ tbStop:()=>stopRest(),
+ htStart:()=>htStart(),htPause:()=>htPause(),htReset:()=>htReset(),
+ ctStart:()=>{CT.running=true;CT.start=Date.now();beep(660,100);render()},
+ ctStop:()=>{const sec=Math.round((Date.now()-CT.start)/1000);CT.running=false;S.draft.rounds=S.draft.rounds||[];S.draft.rounds.push(sec);beep(880,150,2);save();render()},
+ rmRound:a=>{S.draft.rounds.splice(+a.dataset.i,1);save();render()},
+ edit:async a=>{if(S.draft&&!(await confirmP('Replace the workout in progress with this one for editing?','Replace',true)))return;const s=S.sessions.find(x=>x.id===a.dataset.v);S.draft=JSON.parse(JSON.stringify(s));S.draft.editing=true;save(true);go('workout')},
+ del:async a=>{if(!(await confirmP('Delete this session?','Delete',true)))return;S.sessions=S.sessions.filter(x=>x.id!==a.dataset.v);save(true);render()},
+ setVid:async a=>{const id=a.dataset.v;const u=await promptP('Paste a YouTube URL for "'+exName(id)+'" (blank resets to search):',S.settings.videos[id]||'');if(u===null)return;if(u.trim())S.settings.videos[id]=u.trim();else delete S.settings.videos[id];save(true);render()},
+ hShift:a=>{const d=ymd(addDays(parse(habitDate),+a.dataset.v));if(d<=todayStr()){habitDate=d;render()}},
+ hDate:a=>{if(a.dataset.v<=todayStr()){habitDate=a.dataset.v;render()}},
+ signIn:()=>showAuth(),
+ signOut:async()=>{if(!(await confirmP(Sync.dirty?'You have changes that have not synced yet. Sign out anyway? They will be lost on this device.':'Sign out and clear the data stored on this device? Your data stays safe in your database.','Sign out',true)))return;try{await Sync.sb.auth.signOut()}catch(e){}try{localStorage.removeItem(KEY);localStorage.removeItem(DIRTY_KEY)}catch(e){}location.reload()},
+ newCycle:()=>{S.settings.cycleStart=todayStr();save(true);render();toast('New cycle starts today')},
+ swapAB:()=>{const[y,m]=todayStr().split('-').map(Number);const cur=schedFor(todayStr());const t=new Date(y,m-1+(cur==='A'?-1:0),1);S.settings.schedAStart=`${t.getFullYear()}-${pad(t.getMonth()+1)}`;save(true);render();toast('This month is now Schedule '+schedFor(todayStr()))},
+ export:()=>dl('huberman-tracker-backup-'+todayStr()+'.json',JSON.stringify(S,null,1),'application/json'),
+ csv:()=>{const rows=[['date','day','schedule','exercise','set','weight','reps_or_sec']];S.sessions.filter(s=>s.kind==='resistance').forEach(s=>s.exercises.forEach(e=>e.sets.forEach((st,i)=>rows.push([s.date,s.day,s.sched,exName(e.ex),i+1,st.w,st.r]))));
+  dl('huberman-sets-'+todayStr()+'.csv',rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv')},
+ reset:async()=>{if((await confirmP('Erase ALL workouts, habits and settings? Export a backup first if unsure.','Continue',true))&&(await confirmP('Really erase everything? This also clears your cloud copy.','Erase everything',true))){S=JSON.parse(JSON.stringify(DEF));save(true);go('today')}},
+};
+async function dl(name,text){try{const d=window.claude?await claude.use('downloads'):null;if(!d){toast('Saving files is not available here');return}await d.save({filename:name,data:text});toast('File saved')}catch(e){if(!e||e.code!=='declined')toast('Could not save the file')}}
+
+document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a)return;if(a.tagName==='INPUT'&&a.type==='checkbox'){ACT[a.dataset.a](a,e);return}e.preventDefault();ACT[a.dataset.a]&&ACT[a.dataset.a](a,e)});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset.hr!==undefined&&S.draft){S.draft.hrs=S.draft.hrs||[];S.draft.hrs[+t.dataset.hr]=t.value;save();return}
+ if(t.dataset.f&&S.draft&&t.type!=='checkbox'&&t.tagName!=='SELECT'){const f=t.dataset.f;if(f==='w'||f==='r'){const st=S.draft.exercises[+t.dataset.i].sets[+t.dataset.j];st[f]=t.value;
+  if(f==='r'&&LOGV2(S.draft.day)){const was=st.done;st.done=t.value.trim()!=='';const tr=t.closest('tr');if(tr)tr.classList.toggle('d',st.done);if(st.done&&!was)startRest(S.draft.sched==='A'?num(S.settings.restA):num(S.settings.restB),'Rest \u2013 '+exName(S.draft.exercises[+t.dataset.i].ex))}}else S.draft[f]=t.value;save()}
+ if(t.dataset.set&&t.tagName==='INPUT'){S.settings[t.dataset.set]=t.value;save()}
+});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset.f&&S.draft&&(t.type==='checkbox'||t.tagName==='SELECT'||t.type==='date')){
+  const f=t.dataset.f;S.draft[f]=t.type==='checkbox'?t.checked:t.value;
+  if(f==='date'&&S.draft.kind!=='resistance')S.draft.sched=schedFor(t.value);save();if(t.type==='date')render();return}
+ if(t.dataset.f&&S.draft&&f_isText(t)){render();return}
+ if(t.dataset.h){const ds=habitDate;S.habits[ds]=S.habits[ds]||{};S.habits[ds][t.dataset.h]=t.checked;save();render();return}
+ if(t.dataset.set){let v=t.value;S.settings[t.dataset.set]=v;save(true);render();return}
+ if(t.dataset.c==='swap'){const i=+t.dataset.i;const e2=S.draft.exercises[i];const hadDone=e2.sets.some(s=>s.done);e2.ex=t.value;if(!hadDone)e2.sets=makeSets(t.value,S.draft.sched,S.draft.day);if(e2.slot)S.settings.choices[e2.slot]=t.value;save();render();return}
+ if(t.dataset.c==='stype'){S.draft.exercises[+t.dataset.i].sets[+t.dataset.j].t=t.value;save();return}
+ if(t.dataset.c==='sched'){S.draft.sched=t.value;save();render();return}
+ if(t.dataset.c==='progEx'){progEx=t.value;render();return}
+ if(t.id==='imp'&&t.files[0]){const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d.sessions||!d.settings)throw 0;if(!(await confirmP('Replace current data with this backup?','Replace',true)))return;S=d;S.settings=Object.assign({},DEF.settings,S.settings);S.habits=S.habits||{};save(true);go('today');toast('Backup imported')}catch(err){toast('That file is not a valid tracker backup.')}};r.readAsText(t.files[0])}
+});
+function f_isText(t){return t.dataset.f==='target'||t.dataset.f==='work'||t.dataset.f==='rest'}
+migRest();render();
+Sync.init();
+</script>
+
+</body></html>
