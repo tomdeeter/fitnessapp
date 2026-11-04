@@ -55,6 +55,8 @@ table.sets td{vertical-align:middle}
 table.sets input[type=text]{width:84px}
 table.sets select.stype{font-size:12px;font-weight:700;padding:2px 4px;border-radius:20px;border-color:transparent;background:var(--acc2);color:var(--acc);text-transform:none}
 table.sets.half input[type=text]{width:42px;padding-left:4px;padding-right:4px;text-align:center}
+table.sets .ref{font-size:11px;line-height:1.25;color:var(--muted);white-space:nowrap;padding-left:2px;padding-right:2px}
+th.ref{text-transform:none;font-size:10px}
 table.sets tr.d td{background:var(--goodbg)}
 .ex .exhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
 .ex select{font-weight:700;max-width:100%}
@@ -433,6 +435,13 @@ function lastPerf(ex,sched,excludeId){
  return any;
 }
 const LOGV2=n=>n===2||n===4||n===7;
+function priorWeeks(ex,date,excludeId){
+ const wd=parse(weekStart(date));const out=[null,null];
+ S.sessions.filter(s=>s.kind==='resistance'&&s.id!==excludeId&&s.date<date).sort((x,y)=>y.date.localeCompare(x.date)||(y.start||0)-(x.start||0)).forEach(s=>{
+  const k=Math.round((wd-parse(weekStart(s.date)))/604800000);
+  if(k>=1&&k<=2&&!out[k-1]){const e=(s.exercises||[]).find(x=>x.ex===ex&&x.sets.some(st=>st.w||st.r));if(e)out[k-1]=e.sets}});
+ return out;
+}
 const neckLine=s=>{const n=[s.neckExt&&'extension',s.neckFlex&&'flexion',s.neckLatL&&'lateral left',s.neckLatR&&'lateral right'].filter(Boolean);return n.length?`<div class="small muted">Neck: ${n.join(', ')}</div>`:''};
 function makeSets(ex,sched,day){const last=lastPerf(ex,sched);const n=last?Math.max(last.sets.length,1):SCHED[sched].defSets;
  return Array.from({length:n},(_,i)=>({w:last&&last.sets[i]?last.sets[i].w:'',r:'',done:false,t:LOGV2(day)&&i<2?'warmup':'working'}))}
@@ -578,6 +587,7 @@ function wResistance(d){
  d.exercises.forEach((e,i)=>{
   const sl=Object.values(SLOTS).flat().find(x=>x.id===e.slot);const ex=EX[e.ex];const unit=exUnit(e.ex);
   const last=lastPerf(e.ex,sc,d.id);
+  const pw=LOGV2(d.day)?priorWeeks(e.ex,d.date,d.id):[];
   let hint='';
   if(last&&last.sched===sc&&last.sets.length&&unit==='reps'){const rs=last.sets.filter(s=>s.t!=='warmup').map(s=>num(s.r));if(rs.length&&rs.every(r=>r>=R.reps[1]))hint=`<span class="hint up">▲ Hit ${R.reps[1]}+ reps on every set last time. Add weight.</span>`;else if(rs.some(r=>r&&r<R.reps[0]))hint=`<span class="hint dn">Below ${R.reps[0]} reps last time. Hold or lighten the weight.</span>`}
   const opts=sl?sl.o.map(o=>`<option value="${o}" ${o===e.ex?'selected':''}>${esc(EX[o].n)}</option>`).join(''):'';
@@ -586,10 +596,10 @@ function wResistance(d){
    <a class="btn sm" href="${esc(vidFor(e.ex))}" target="_blank" rel="noopener">▶ Demo</a>${sl?'':`<button class="btn sm ghost danger" data-a="rmEx" data-i="${i}">Remove</button>`}</div>
    ${ex?`<div class="cue">${esc(ex.cue)} <span class="pill">${esc(ex.eq)}</span></div>`:''}
    <div class="last">${last?`<span class="muted">Last (${fmtDate(last.date)}, ${last.sched}):</span> ${last.sets.map(s=>`${s.t==='warmup'?'(W) ':''}${s.w?esc(s.w):'BW'}×${esc(s.r||'?')}`).join(' · ')}`:''}</div>${hint}
-   <table class="sets${LOGV2(d.day)?' half':''}"><tr><th>Set</th><th>${unit==='sec'?'Load':u}</th><th>${unit==='sec'?'Sec':'Reps'}</th>${LOGV2(d.day)?'':'<th>Done</th>'}<th></th></tr>
+   <table class="sets${LOGV2(d.day)?' half':''}"><tr><th>Set</th><th>${unit==='sec'?'Load':u}</th><th>${unit==='sec'?'Sec':'Reps'}</th>${LOGV2(d.day)?'<th class="ref">1w / 2w ago</th>':'<th>Done</th>'}<th></th></tr>
    ${e.sets.map((s,j)=>`<tr class="${s.done?'d':''}"><td>${LOGV2(d.day)?`<select class="stype" data-c="stype" data-i="${i}" data-j="${j}"><option value="warmup" ${s.t==='warmup'?'selected':''}>warmup</option><option value="working" ${s.t==='warmup'?'':'selected'}>working</option></select>`:j+1}</td><td><input type="text" inputmode="decimal" data-f="w" data-i="${i}" data-j="${j}" value="${esc(s.w)}" placeholder="${last&&last.sets[j]?esc(last.sets[j].w):'—'}"></td>
     <td><input type="text" inputmode="numeric" data-f="r" data-i="${i}" data-j="${j}" value="${esc(s.r)}" placeholder="${LOGV2(d.day)?'':last&&last.sets[j]&&last.sets[j].r?esc(last.sets[j].r):(unit==='sec'?'10':R.reps[0]+'–'+R.reps[1])}"></td>
-    ${LOGV2(d.day)?'':`<td><input type="checkbox" data-a="doneSet" data-i="${i}" data-j="${j}" ${s.done?'checked':''}></td>`}<td><button class="btn sm ghost" data-a="rmSet" data-i="${i}" data-j="${j}" title="Remove set">✕</button></td></tr>`).join('')}
+    ${LOGV2(d.day)?`<td class="ref">${pw.map(ws=>{const x=ws&&ws[j];return x&&(x.w||x.r)?`${x.w?esc(x.w):'BW'}×${esc(x.r||'?')}`:'—'}).join('<br>')}</td>`:`<td><input type="checkbox" data-a="doneSet" data-i="${i}" data-j="${j}" ${s.done?'checked':''}></td>`}<td><button class="btn sm ghost" data-a="rmSet" data-i="${i}" data-j="${j}" title="Remove set">✕</button></td></tr>`).join('')}
    </table><button class="btn sm" data-a="addSet" data-i="${i}" style="margin-top:6px">+ Set</button></div>`;
  });
  if(d.day===4||d.day===7)h+=`<div class="card ex"><div class="exhead"><span class="tag">Neck</span></div>
