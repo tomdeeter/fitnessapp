@@ -426,7 +426,6 @@ const sessionsIn=(from,toExcl)=>S.sessions.filter(s=>s.date>=from&&s.date<toExcl
 const coldMin=s=>(s.rounds||[]).reduce((a,r)=>a+num(r),0)/60+num(s.extraCold);
 function z2Min(list){return list.filter(s=>s.kind==='cardio'&&s.z2).reduce((a,s)=>a+num(s.min),0)}
 function coldTotal(list){return list.filter(s=>s.kind==='cold').reduce((a,s)=>a+coldMin(s),0)}
-const e1rm=(w,r)=>w>0&&r>0?w*(1+r/30):0;
 function lastPerf(ex,sched,excludeId){
  const list=S.sessions.filter(s=>s.kind==='resistance'&&s.id!==excludeId).sort((a,b)=>b.date.localeCompare(a.date)||(b.start||0)-(a.start||0));
  let any=null;
@@ -503,32 +502,15 @@ function tick(){
 }
 setInterval(tick,200);
 
-/* ---------- charts ---------- */
-function lineChart(pts,h=190,unit=''){
- if(!pts.length)return '<p class="muted small">No data yet.</p>';
- const W=640,H=h,pl=46,pr=30,pt=12,pb=26;const ys=pts.map(p=>p.y);let mn=Math.min(...ys),mx=Math.max(...ys);if(mn===mx){mn-=5;mx+=5}const pd=(mx-mn)*.12;mn-=pd;mx+=pd;
- const X=i=>pl+(pts.length===1?(W-pl-pr)/2:i*(W-pl-pr)/(pts.length-1));const Y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));
- let g='';for(let k=0;k<=3;k++){const v=mn+(mx-mn)*k/3;g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end">${Math.round(v)}</text>`}
- const path=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join('');
- const dots=pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="var(--acc)"><title>${esc(p.x)}: ${Math.round(p.y)}${unit}</title></circle>`).join('');
- const lbl=[0,Math.floor((pts.length-1)/2),pts.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${esc(pts[i].x)}</text>`).join('');
- return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${g}<path d="${path}" fill="none" stroke="var(--acc)" stroke-width="2.5"/>${dots}${lbl}</svg>`;
-}
-function barChart(bars,target,h=170,unit=''){
- const W=640,H=h,pl=40,pr=10,pt=12,pb=26;const mx=Math.max(target*1.15,...bars.map(b=>b.y),1);const bw=(W-pl-pr)/bars.length;const Y=v=>pt+(H-pt-pb)*(1-v/mx);
- let s='';bars.forEach((b,i)=>{const x=pl+i*bw+bw*.18,w=bw*.64;s+=`<rect x="${x}" y="${Y(b.y)}" width="${w}" height="${Math.max(0,H-pb-Y(b.y))}" rx="4" fill="${b.y>=target?'var(--good)':'var(--acc)'}"><title>${esc(b.label)}: ${Math.round(b.y)}${unit}</title></rect><text x="${x+w/2}" y="${H-8}" text-anchor="middle">${esc(b.label)}</text><text x="${x+w/2}" y="${Y(b.y)-4}" text-anchor="middle">${b.y?Math.round(b.y):''}</text>`});
- return `<svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="${pl}" x2="${W-pr}" y1="${Y(target)}" y2="${Y(target)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${pl-4}" y="${Y(target)+4}" text-anchor="end">${target}</text>${s}</svg>`;
-}
-
 /* ---------- views ---------- */
-let VIEW='today',progEx='',habitDate=todayStr();
-const TABS=[['today','Today'],['workout','Workout'],['plan','Plan & Videos'],['history','History'],['progress','Progress'],['settings','Settings']];
+let VIEW='today',habitDate=todayStr();
+const TABS=[['today','Today'],['workout','Workout'],['plan','Plan & Videos'],['history','History'],['settings','Settings']];
 function go(v){VIEW=v;render();window.scrollTo(0,0);if(v==='workout')wake()}
 function render(){
  $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="${VIEW===k?'on':''}" data-a="go" data-v="${k}">${l}${k==='workout'&&S.draft?'<span class="dot"></span>':''}</button>`).join('');
  const sc=schedFor(todayStr());
  $('#hdrSched').innerHTML=`<span class="tag ${sc}">This month: Schedule ${sc} · ${SCHED[sc].label}</span>`;
- $('#app').innerHTML=({today:vToday,workout:vWorkout,plan:vPlan,history:vHistory,progress:vProgress,settings:vSettings})[VIEW]();
+ $('#app').innerHTML=({today:vToday,workout:vWorkout,plan:vPlan,history:vHistory,settings:vSettings})[VIEW]();
 }
 function schedLine(sc){const r=SCHED[sc];return `<span class="tag ${sc}">Schedule ${sc}</span> <span class="small">${r.sets} sets × ${r.reps[0]}–${r.reps[1]} reps · rest ${r.rest}</span>`}
 
@@ -691,24 +673,6 @@ function vHistory(){
   <div class="small" style="margin-top:4px">${summary(s)}</div>${s.notes?`<div class="small muted" style="margin-top:4px">“${esc(s.notes)}”</div>`:''}</div>`).join('');
 }
 
-function vProgress(){
- const ws=weekStart(todayStr());const weeks=[];for(let i=7;i>=0;i--){const st=ymd(addDays(parse(ws),-7*i));const en=ymd(addDays(parse(st),7));const l=sessionsIn(st,en);const d=parse(st);
-  weeks.push({label:`${MON[d.getMonth()]} ${d.getDate()}`,z:z2Min(l),c:coldTotal(l),w:new Set(l.filter(s=>s.day>0).map(s=>s.day)).size})}
- const used=[...new Set(S.sessions.filter(s=>s.kind==='resistance').flatMap(s=>s.exercises.map(e=>e.ex)))];
- if(!progEx||!used.includes(progEx))progEx=used[0]||'';
- let exHtml='<p class="muted small">Log a resistance workout to see strength trends.</p>';
- if(progEx){const rows=S.sessions.filter(s=>s.kind==='resistance').sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const e=s.exercises.find(x=>x.ex===progEx);if(!e)return null;
-   const best=Math.max(0,...e.sets.map(st=>e1rm(num(st.w),num(st.r))));const top=Math.max(0,...e.sets.map(st=>num(st.w)));const reps=Math.max(0,...e.sets.map(st=>num(st.r)));return{s,e,best,top,reps}}).filter(Boolean);
-  const useW=rows.some(r=>r.best>0);const pts=rows.map(r=>({x:fmtDate(r.s.date),y:useW?r.best:r.reps}));
-  const pr=rows.reduce((m,r)=>r.best>m.best?r:m,{best:0});
-  exHtml=`<p class="small muted">${useW?`Estimated 1-rep max (Epley) per session, in ${S.settings.units}`:'Best reps/seconds per session'}${pr.best?` · Best: ${Math.round(pr.best)} ${S.settings.units} e1RM on ${fmtDate(pr.s.date)}`:''}</p>${lineChart(pts,200)}
-   <table class="small"><tr><th>Date</th><th>Sched</th><th>Sets</th></tr>${rows.slice(-10).reverse().map(r=>`<tr><td>${fmtDate(r.s.date)}</td><td><span class="tag ${r.s.sched}">${r.s.sched}</span></td><td>${r.e.sets.map(st=>`${st.w||'BW'}×${st.r||'?'}`).join(' · ')}</td></tr>`).join('')}</table>`}
- return `<div class="card"><h3>Zone 2 minutes per cycle</h3><p class="small muted">Target 180–200 min per 7-day cycle (dashed line = 180)</p>${barChart(weeks.map(w=>({label:w.label,y:w.z})),180,170,' min')}</div>
- <div class="card"><h3>Cold minutes per cycle</h3>${barChart(weeks.map(w=>({label:w.label,y:w.c})),11,160,' min')}</div>
- <div class="card"><h3>Protocol days completed per cycle</h3>${barChart(weeks.map(w=>({label:w.label,y:w.w})),7,160,' days')}</div>
- <div class="card"><div class="row" style="justify-content:space-between"><h3>Strength progress</h3>${used.length?`<select data-c="progEx">${used.map(u=>`<option value="${esc(u)}" ${u===progEx?'selected':''}>${esc(exName(u))}</option>`).join('')}</select>`:''}</div>${exHtml}</div>`;
-}
-
 function vSettings(){
  const s=S.settings;const sc=schedFor(todayStr());
  return `<div class="card"><h2>Settings</h2><div class="grid">
@@ -781,7 +745,6 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.c==='swap'){const i=+t.dataset.i;const e2=S.draft.exercises[i];const hadDone=e2.sets.some(s=>s.done);e2.ex=t.value;if(!hadDone)e2.sets=makeSets(t.value,S.draft.sched,S.draft.day);if(e2.slot)S.settings.choices[e2.slot]=t.value;save();render();return}
  if(t.dataset.c==='stype'){S.draft.exercises[+t.dataset.i].sets[+t.dataset.j].t=t.value;save();return}
  if(t.dataset.c==='sched'){S.draft.sched=t.value;save();render();return}
- if(t.dataset.c==='progEx'){progEx=t.value;render();return}
  if(t.id==='imp'&&t.files[0]){const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d.sessions||!d.settings)throw 0;if(!(await confirmP('Replace current data with this backup?','Replace',true)))return;S=d;S.settings=Object.assign({},DEF.settings,S.settings);S.habits=S.habits||{};save(true);go('today');toast('Backup imported')}catch(err){toast('That file is not a valid tracker backup.')}};r.readAsText(t.files[0])}
 });
 function f_isText(t){return t.dataset.f==='target'||t.dataset.f==='work'||t.dataset.f==='rest'}
