@@ -1,12 +1,12 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Foundational Fitness Tracker</title>
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Fitness"><meta name="theme-color" content="#0b7a75">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Fitness"><meta name="theme-color" content="#470e25">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--ink:#16202b;--muted:#647182;--line:#e3e7ec;--acc:#0b7a75;--acc2:#e6f4f3;--warn:#b25b00;--warnbg:#fff4e5;--good:#1d7a3a;--goodbg:#e8f6ec;--A:#7a3db8;--Abg:#f2eafb;--B:#1f63c4;--Bbg:#e8f0fc;--bad:#b3261e;--onacc:#fff}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141a;--card:#171e26;--ink:#e6ebf0;--muted:#93a0ae;--line:#2a3440;--acc:#3fc1b9;--acc2:#163432;--warn:#f0a44b;--warnbg:#33240f;--good:#5fd18a;--goodbg:#14301e;--A:#c49af0;--Abg:#2c1f3d;--B:#7fb0f5;--Bbg:#17263d;--bad:#f28b82;--onacc:#06201f;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0f141a;--card:#171e26;--ink:#e6ebf0;--muted:#93a0ae;--line:#2a3440;--acc:#3fc1b9;--acc2:#163432;--warn:#f0a44b;--warnbg:#33240f;--good:#5fd18a;--goodbg:#14301e;--A:#c49af0;--Abg:#2c1f3d;--B:#7fb0f5;--Bbg:#17263d;--bad:#f28b82;--onacc:#06201f;color-scheme:dark}
+:root{--bg:#fbf3ee;--card:#fff;--ink:#470e25;--muted:#8a6573;--line:#ecd9d2;--acc:#c93410;--acc2:#fde8e0;--warn:#a55200;--warnbg:#fff0dc;--good:#3f7a00;--goodbg:#eef8d6;--A:#c0198a;--Abg:#fde6f5;--B:#5b3fc4;--Bbg:#ece6fc;--bad:#b3261e;--onacc:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#470e25;--card:#571a33;--ink:#fff4ee;--muted:#cfaeb9;--line:#74304c;--acc:#ff7e29;--acc2:#6b2a2d;--warn:#ffb067;--warnbg:#5e3419;--good:#d2ff85;--goodbg:#34471f;--A:#fe4cbe;--Abg:#5c1a45;--B:#b79cff;--Bbg:#3a2468;--bad:#ff8a80;--onacc:#470e25;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#470e25;--card:#571a33;--ink:#fff4ee;--muted:#cfaeb9;--line:#74304c;--acc:#ff7e29;--acc2:#6b2a2d;--warn:#ffb067;--warnbg:#5e3419;--good:#d2ff85;--goodbg:#34471f;--A:#fe4cbe;--Abg:#5c1a45;--B:#b79cff;--Bbg:#3a2468;--bad:#ff8a80;--onacc:#470e25;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
@@ -72,7 +72,7 @@ table.sets tr.d td{background:var(--goodbg)}
 .timer{border-radius:14px;padding:18px;text-align:center;background:var(--acc2);margin:10px 0}
 .timer .ph{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
 .timer .tt{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
-.timer.work{background:#c62828;color:#fff}.timer.rest{background:#1565c0;color:#fff}.timer.ready{background:var(--warnbg)}.timer.done{background:var(--goodbg)}
+.timer.work{background:#ff451a;color:#fff}.timer.rest{background:#6b46d6;color:#fff}.timer.ready{background:var(--warnbg)}.timer.done{background:var(--goodbg)}
 .hab{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
 .hab:last-child{border-bottom:0}
 .hab .d{font-size:12.5px;color:var(--muted)}
@@ -87,7 +87,7 @@ svg text{fill:var(--muted);font-size:11px}
 @media (max-width:560px){.chips{gap:3px}.chip{font-size:10.5px;padding:6px 2px}.timer .tt{font-size:52px}table.sets input[type=text]{width:66px}}
 .card{overflow-x:auto}
 select{max-width:100%}
-#modal{position:fixed;inset:0;z-index:30;background:rgba(10,15,20,.55);display:flex;align-items:center;justify-content:center;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+#modal{position:fixed;inset:0;z-index:30;background:rgba(30,5,15,.6);display:flex;align-items:center;justify-content:center;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
 #modal .mbox{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
 #modal p{margin:0}
 #modal input{width:100%}
