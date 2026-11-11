@@ -523,7 +523,7 @@ function schedLine(sc){const r=SCHED[sc];return `<span class="tag ${sc}">Schedul
 function vToday(){
  const td=todayStr(),dn=nextDay(),d=DAYS[dn-1],ws=curWS(),we=ymd(addDays(parse(ws),7));
  const wk=sessionsIn(ws,we);const doneDays=new Set(wk.map(s=>s.day));
- const z=z2Min(wk),c=coldTotal(wk),sc=schedFor(td);
+ const sc=schedFor(td);
  const chips=DAYS.map(x=>{const done=doneDays.has(x.n);
   return `<div class="chip ${done?'done':''} ${x.n===dn&&!done?'today':''}" data-a="start" data-v="${x.n}" title="${esc(x.title)}"><b>Day ${x.n}</b>${esc(x.short)}${done?'<br>✓':''}</div>`}).join('');
  const todayDone=doneDays.has(dn);
@@ -544,10 +544,7 @@ function vToday(){
   <p class="small muted" style="margin-bottom:0">Missed a day? The protocol lets you double up later in the cycle. Swapping Day 4 and Day 5 is fine too.</p>
  </div>
  <div class="card"><div class="row" style="justify-content:space-between"><h3>This cycle <span class="small muted" style="font-weight:400">(Cycle ${cycleNum(ws)}: ${fmtDate(ws)} – ${fmtDate(ymd(addDays(parse(ws),6)))})</span></h3><span class="small muted">${doneDays.has(0)?doneDays.size-1:doneDays.size}/7 protocol days</span></div><div class="chips">${chips}</div></div>
- <div class="grid">
-  <div class="card"><h3>Zone 2 this cycle</h3><div class="big">${Math.round(z)} <span class="small muted">/ 180–200 min</span></div><div class="bar"><i style="width:${Math.min(100,z/180*100)}%"></i></div><button class="btn sm" data-a="start" data-v="0">+ Log extra Zone 2 / walk</button></div>
-  <div class="card"><h3>Cold exposure this cycle</h3><div class="big">${c.toFixed(1)} <span class="small muted">/ ~11 min</span></div><div class="bar"><i style="width:${Math.min(100,c/11*100)}%"></i></div><span class="small muted">Huberman's weekly total target, split across sessions</span></div>
- </div>`;
+`;
 }
 
 function vWorkout(){
