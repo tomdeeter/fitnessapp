@@ -417,7 +417,8 @@ const modHR=()=>[Math.round(maxHR()*.75),Math.round(maxHR()*.8)];
 function cycleStart(){if(S.settings.cycleStart)return S.settings.cycleStart;const ds=S.sessions.map(s=>s.date).sort();return ds[0]||todayStr()}
 const weekStart=ds=>{const cs=parse(cycleStart());const diff=Math.round((parse(ds)-cs)/86400000);return ymd(addDays(cs,7*Math.floor(diff/7)))};
 const cycleNum=ds=>Math.floor(Math.round((parse(ds)-parse(cycleStart()))/86400000)/7)+1;
-function nextDay(){const ws=weekStart(todayStr());const done=new Set(sessionsIn(ws,ymd(addDays(parse(ws),7))).map(s=>s.day));const n=DAYS.find(d=>!done.has(d.n));return n?n.n:1}
+const curWS=()=>{const t=todayStr(),cs=cycleStart();return cs>t?cs:weekStart(t)};
+function nextDay(){const ws=curWS();const done=new Set(sessionsIn(ws,ymd(addDays(parse(ws),7))).map(s=>s.day));const n=DAYS.find(d=>!done.has(d.n));return n?n.n:1}
 function schedFor(ds){const[y,m]=ds.split('-').map(Number);const[ay,am]=S.settings.schedAStart.split('-').map(Number);const diff=(y*12+m)-(ay*12+am);return ((diff%2)+2)%2===0?'A':'B'}
 const exName=id=>EX[id]?EX[id].n:(id||'').replace(/^custom:/,'');
 const exUnit=id=>(EX[id]&&EX[id].u==='sec')?'sec':'reps';
@@ -471,6 +472,7 @@ function finishDraft(){
  if(d.kind==='resistance'){d.exercises.forEach(e=>e.sets=e.sets.filter(st=>st.done||st.r));d.exercises=d.exercises.filter(e=>e.sets.length)}
  const editing=d.editing;delete d.editing;
  const i=S.sessions.findIndex(s=>s.id===d.id);if(i>=0)S.sessions[i]=d;else S.sessions.push(d);
+ if(d.day===7&&!editing){const nx=ymd(addDays(parse(d.date),1));if(nx>cycleStart())S.settings.cycleStart=nx}
  S.draft=null;stopRest();HT.running=false;CT.running=false;save(true);toast(editing?'Workout updated':'Workout saved');go('today');
 }
 
@@ -515,7 +517,7 @@ function render(){
 function schedLine(sc){const r=SCHED[sc];return `<span class="tag ${sc}">Schedule ${sc}</span> <span class="small">${r.sets} sets × ${r.reps[0]}–${r.reps[1]} reps · rest ${r.rest}</span>`}
 
 function vToday(){
- const td=todayStr(),dn=nextDay(),d=DAYS[dn-1],ws=weekStart(td),we=ymd(addDays(parse(ws),7));
+ const td=todayStr(),dn=nextDay(),d=DAYS[dn-1],ws=curWS(),we=ymd(addDays(parse(ws),7));
  const wk=sessionsIn(ws,we);const doneDays=new Set(wk.map(s=>s.day));
  const z=z2Min(wk),c=coldTotal(wk),sc=schedFor(td);
  const chips=DAYS.map(x=>{const done=doneDays.has(x.n);
@@ -537,7 +539,7 @@ function vToday(){
   </div>
   <p class="small muted" style="margin-bottom:0">Missed a day? The protocol lets you double up later in the cycle. Swapping Day 4 and Day 5 is fine too.</p>
  </div>
- <div class="card"><div class="row" style="justify-content:space-between"><h3>This cycle <span class="small muted" style="font-weight:400">(Cycle ${cycleNum(td)}: ${fmtDate(ws)} – ${fmtDate(ymd(addDays(parse(ws),6)))})</span></h3><span class="small muted">${doneDays.has(0)?doneDays.size-1:doneDays.size}/7 protocol days</span></div><div class="chips">${chips}</div></div>
+ <div class="card"><div class="row" style="justify-content:space-between"><h3>This cycle <span class="small muted" style="font-weight:400">(Cycle ${cycleNum(ws)}: ${fmtDate(ws)} – ${fmtDate(ymd(addDays(parse(ws),6)))})</span></h3><span class="small muted">${doneDays.has(0)?doneDays.size-1:doneDays.size}/7 protocol days</span></div><div class="chips">${chips}</div></div>
  <div class="grid">
   <div class="card"><h3>Zone 2 this cycle</h3><div class="big">${Math.round(z)} <span class="small muted">/ 180–200 min</span></div><div class="bar"><i style="width:${Math.min(100,z/180*100)}%"></i></div><button class="btn sm" data-a="start" data-v="0">+ Log extra Zone 2 / walk</button></div>
   <div class="card"><h3>Cold exposure this cycle</h3><div class="big">${c.toFixed(1)} <span class="small muted">/ ~11 min</span></div><div class="bar"><i style="width:${Math.min(100,c/11*100)}%"></i></div><span class="small muted">Huberman's weekly total target, split across sessions</span></div>
